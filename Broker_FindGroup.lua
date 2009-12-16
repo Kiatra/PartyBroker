@@ -53,7 +53,6 @@ local function UpdateText()
 		local tankColor = green
 		local damageColor = green
 		local healerColor = green
-		tankNeeds = 1
 		if tankNeeds > 0 then
 			tankColor = red
 		end
@@ -62,7 +61,6 @@ local function UpdateText()
 		end
 		if dpsNeeds > 0 then
 			damageColor = red
-			Debug("damageColor")
 		end
 		dataobj.text = string.format("%s: %sTank|r/%sHealer|r/%sDPS %i|r",instanceName, tankColor, healerColor, damageColor, dpshas)
 		dataobj.OnEnter = MiniMapLFGFrame_OnEnter

@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: Broker: |cff00ff00DungeonFinder|r 
-## Version: 0.1beta
+## Version: 0.2beta
 ## Notes:
 ## Author: yess
 ## X-eMail: yess@fantasymail.de
