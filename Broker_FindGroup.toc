@@ -12,6 +12,7 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 
 localization\enUS.lua
 localization\deDE.lua
+localization\zhTW.lua
 
 LibDataBroker-1.1.lua
 Broker_FindGroup.lua
