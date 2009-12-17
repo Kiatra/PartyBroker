@@ -7,7 +7,11 @@
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
+libs\AceLocale-3.0\AceLocale-3.0.xml
 #@end-no-lib-strip@
+
+localization\enUS.lua
+localization\deDE.lua
 
 LibDataBroker-1.1.lua
 Broker_FindGroup.lua

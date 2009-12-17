@@ -1,6 +1,6 @@
 -- Broker_FindGroup by yess, yessica@fantasymail.de
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
-
+local L = LibStub("AceLocale-3.0"):GetLocale("Broker_FindGroup")
 local dataobj
 local path = "Interface\\AddOns\\Broker_FindGroup\\media\\"
 
@@ -62,16 +62,16 @@ local function UpdateText()
 		if dpsNeeds > 0 then
 			damageColor = red
 		end
-		dataobj.text = string.format("%s: %sTank|r/%sHealer|r/%sDPS %i|r",instanceName, tankColor, healerColor, damageColor, dpshas)
-		dataobj.OnEnter = MiniMapLFGFrame_OnEnter
+		dataobj.text = string.format("%s: %s%s|r/%s%s|r/%s%s %i|r",instanceName, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+		--dataobj.OnEnter = MiniMapLFGFrame_OnEnter
 	else
 		local mode, submode = GetLFGMode();
 		if mode == "lfgparty" then
-			dataobj.text = "In Party"
+			dataobj.text = L["In Party"]
 		elseif mode == "queued" then
-			dataobj.text = "Assembling group..."
+			dataobj.text = L["Assembling group..."]
 		else
-			dataobj.text = "Find Group"
+			dataobj.text = L["Find Group"]
 		end
 	end
 end
@@ -87,14 +87,14 @@ function dataobj:OnEnter()
 
 	if mode == "lfgparty" then 
 		if ( IsInLFGDungeon() ) then
-			tooltip:AddLine("Right click to teleport out.")
+			tooltip:AddLine(L["Right click to teleport out."])
 		elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
-			tooltip:AddLine("Right click to teleport in.")
+			tooltip:AddLine(L["Right click to teleport in."])
 		end
 	elseif (mode == "queued" or mode == "listed") and instanceName then
-		tooltip:AddLine("Queued for: "..instanceName )
+		tooltip:AddLine(L["Queued for: "]..instanceName )
 	else
-		tooltip:AddLine("Click to open the dungeon finder.")
+		tooltip:AddLine(L["Click to open the dungeon finder."])
 	end
 	
 	--[[
