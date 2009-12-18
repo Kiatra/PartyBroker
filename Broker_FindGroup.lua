@@ -4,13 +4,30 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Broker_FindGroup")
 local dataobj
 local path = "Interface\\AddOns\\Broker_FindGroup\\media\\"
 
-function Debug(...)
+local function Debug(...)
+	 --@debug@
 	local s = "Broker_FindGroup Debug:"
 	for i=1,select("#", ...) do
 		local x = select(i, ...)
 		s = strjoin(" ",s,tostring(x))
 	end
 	DEFAULT_CHAT_FRAME:AddMessage(s)
+	--@end-debug@
+end
+
+local function GetTimeString(seconds)
+	if seconds then
+		local min = (seconds / 60)
+		local sec = mod(seconds, 60)
+		--[[
+		if( sec < 10) then
+				-- add zero 
+			return string.format("%i:0%i", min, sec)
+		end
+		return string.format("%i:%i", min, sec)
+		--]]
+		return seconds > 0 and (sec < 10 and string.format("%i:%0i", min, sec) or string.format("%i:%i", min, sec)) or "-"
+	end
 end
 
 local function Onclick(self, button, ...) 
@@ -62,6 +79,13 @@ local function UpdateText()
 		if dpsNeeds > 0 then
 			damageColor = red
 		end
+		if instanceType == 261 then
+			instanceName = "Normal"
+		elseif instanceType == 262 then
+			instanceName = "Heroic"
+		else
+			--instanceName = "Custom"
+		end
 		dataobj.text = string.format("%s: %s%s|r/%s%s|r/%s%s %i|r",instanceName, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
 		--dataobj.OnEnter = MiniMapLFGFrame_OnEnter
 	else
@@ -93,25 +117,32 @@ function dataobj:OnEnter()
 		end
 	elseif (mode == "queued" or mode == "listed") and instanceName then
 		tooltip:AddLine(L["Queued for: "]..instanceName )
+		tooltip:AddLine(" " )
+		tooltip:AddDoubleLine("My wait time",GetTimeString(myWait),1,1,1)
+		tooltip:AddLine(" " )
+		--yTooltip:AddDoubleLine("Left", "Right", 1,0,0, 0,0,1);
+		tooltip:AddLine("Wait time as:" )
+		tooltip:AddDoubleLine(L["DPS"],GetTimeString(damageWait),1,1,1)
+		tooltip:AddDoubleLine(L["Healer"],GetTimeString(healerWait),1,1,1)
+		tooltip:AddDoubleLine(L["Tank"],GetTimeString(tankWait),1,1,1)
+		tooltip:AddLine(" " )
+		tooltip:AddDoubleLine("Average wait time:",GetTimeString(averageWait),1,1,1)
 	else
 		tooltip:AddLine(L["Click to open the dungeon finder."])
 	end
 	
-	--[[
-	tooltip:AddLine("" )
-	tooltip:AddLine("" )
+	
+	
+	
+	--@debug@
+	tooltip:AddLine(" " )
 	tooltip:AddLine("Debug:")
 	tooltip:AddDoubleLine("instanceType",instanceType)
-	tooltip:AddDoubleLine("damageWait",damageWait)
-	tooltip:AddDoubleLine("healerWait",healerWait)
-	tooltip:AddDoubleLine("tankWait",tankWait)
-	tooltip:AddDoubleLine("averageWait",averageWait)
-	tooltip:AddDoubleLine("myWait",myWait)
 	tooltip:AddDoubleLine("LFDQueueFrame.type",LFDQueueFrame.type)
 	--UIDropDownMenu_SetSelectedValue(LFDQueueFrameTypeDropDown, LFDQueueFrame.type);
 	tooltip:AddDoubleLine("GetLFGMode() mode", mode)
 	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
-	--]]
+	--@end-debug@
 	tooltip:Show()
 end
 
