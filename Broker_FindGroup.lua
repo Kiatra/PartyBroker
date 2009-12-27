@@ -120,7 +120,7 @@ local function OpenMenu(parent)
 	
 	dropdownmenu ={ 
 		{
-			text = L["Short Instance Name"], 
+			text = L["Show Instance Name"], 
 			checked = db.showText,
 			func = function() db.showText = not db.showText; UpdateText() end, 
 		},

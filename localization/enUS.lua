@@ -2,9 +2,9 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("Broker_FindGroup", "enUS", true)
 if not L then return end
 
-L["Show Text"] = true
+L["Show Instance Name"] = true
 L["Show Wait Time"] = true
-L["Short Instance Name"] = true
+L["Short Text"] = true
 
 L["T"] = true
 L["H"] = true
