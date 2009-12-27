@@ -4,6 +4,7 @@
 ## Notes:
 ## Author: yess
 ## X-eMail: yess@fantasymail.de
+## SavedVariables: Broker_FindGroupDB
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua

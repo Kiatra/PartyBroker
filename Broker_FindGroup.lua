@@ -3,6 +3,11 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
 local L = LibStub("AceLocale-3.0"):GetLocale("Broker_FindGroup")
 local dataobj
 local path = "Interface\\AddOns\\Broker_FindGroup\\media\\"
+local db, dropdown
+local delay = 1
+local counter = 0
+local timer = 0
+local frame = CreateFrame("Frame")
 
 local function Debug(...)
 	 --@debug@
@@ -16,53 +21,33 @@ local function Debug(...)
 end
 
 local function GetTimeString(seconds)
-	if seconds then
+	if seconds > 0 then
 		local min = (seconds / 60)
 		local sec = mod(seconds, 60)
-		--[[
 		if( sec < 10) then
-				-- add zero 
 			return string.format("%i:0%i", min, sec)
 		end
 		return string.format("%i:%i", min, sec)
-		--]]
-		return seconds > 0 and (sec < 10 and string.format("%i:%0i", min, sec) or string.format("%i:%i", min, sec)) or "-"
-	end
-end
-
-local function Onclick(self, button, ...) 
-	if button == "RightButton" then
-		-- teleport
-		if ( IsInLFGDungeon() ) then
-				LFGTeleport(true)
-		elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
-				LFGTeleport(false)
-		--[[
-		else -- or join/leave
-			local mode, submode = GetLFGMode();
-			if not mode then
-				LFDQueueFrameFindGroupButton:GetScript("OnClick")(self, button, ...)
-			elseif mode == "queued" or mode == "listed" then
-				LeaveLFG()
-			end
-		--]]
-		end		
 	else
-		LFDMicroButton:GetScript("OnClick")(self, button, ...) 	
+		return "-"
 	end
 end
 
-dataobj = ldb:NewDataObject("Broker_FindGroup", {
-	type = "data source",
-	icon = path.."lfg.tga",
-	label = "FindGroup",
-	text  = "",
-	OnClick = Onclick
-})
+local function OnUpdate(self, elapsed)
+	counter = counter + elapsed
+	if counter >= delay then
+		timer = timer + 1
+		counter = 0
+	end
+	if db.showTime then 
+		frame:UpdateText()
+	end
+end
 
-local function UpdateText()
+function frame:UpdateText()
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait = GetLFGQueueStats();
 	if (hasData) then
+		frame:SetScript("OnUpdate", OnUpdate)
 		local dpshas = 3 - dpsNeeds 
 		local text=""
 		local green = "|cff00ff00"
@@ -86,9 +71,28 @@ local function UpdateText()
 		else
 			--instanceName = "Custom"
 		end
-		dataobj.text = string.format("%s: %s%s|r/%s%s|r/%s%s %i|r",instanceName, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+		local prefix = db.showText and instanceName and instanceName..": " or ""
+		--[[
+		if db.showText then 
+			prefix = instanceName
+		end
+		--]]
+		local text = ""
+		if db.shortText then
+			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["T"], healerColor,L["H"], damageColor,L["D"], dpshas)
+		else
+			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+		end
+		
+		if db.showTime then
+			dataobj.text = text.." "..L["Time"]..": "..GetTimeString(timer).."/"..GetTimeString(myWait).." "
+		else
+			dataobj.text = text
+		end
 		--dataobj.OnEnter = MiniMapLFGFrame_OnEnter
 	else
+		frame:SetScript("OnUpdate", nil)
+		timer = 0
 		local mode, submode = GetLFGMode();
 		if mode == "lfgparty" then
 			dataobj.text = L["In Party"]
@@ -99,6 +103,74 @@ local function UpdateText()
 		end
 	end
 end
+
+local function OpenMenu(parent)
+	GameTooltip:Hide()
+	
+	if not dropdown then
+		dropdown = CreateFrame("Frame", "EMPDropDown", nil, "UIDropDownMenuTemplate")
+		dropdown.xOffset = 0
+		dropdown.yOffset = 0
+		dropdown.point = "TOPLEFT"
+		dropdown.relativePoint = "BOTTOMLEFT"
+		dropdown.displayMode = "MENU"
+	end
+	
+	dropdown.relativeTo = parent
+	
+	dropdownmenu ={ 
+		{
+			text = L["Show Text"], 
+			checked = db.showText,
+			func = function() db.showText = not db.showText; UpdateText() end, 
+		},
+		{
+			text = L["Show Wait Time"],
+			checked = db.showTime,
+			func = function() db.showTime = not db.showTime; UpdateText() end,
+		},
+		{
+			text = L["Short Text"],
+			checked = db.shortText,
+			func = function() db.shortText = not db.shortText; UpdateText() end,
+		},	
+	}
+	EasyMenu(dropdownmenu, dropdown)
+end
+
+local function Onclick(self, button, ...) 
+	if button == "RightButton" then
+		if IsControlKeyDown() then
+			OpenMenu(self)
+		else
+			-- teleport
+			if ( IsInLFGDungeon() ) then
+					LFGTeleport(true)
+			elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
+					LFGTeleport(false)
+			--[[
+			else -- or join/leave
+				local mode, submode = GetLFGMode();
+				if not mode then
+					LFDQueueFrameFindGroupButton:GetScript("OnClick")(self, button, ...)
+				elseif mode == "queued" or mode == "listed" then
+					LeaveLFG()
+				end
+			--]]
+			end
+		end
+	else
+		LFDMicroButton:GetScript("OnClick")(self, button, ...) 	
+	end
+end
+
+dataobj = ldb:NewDataObject("Broker_FindGroup", {
+	type = "data source",
+	icon = path.."lfg.tga",
+	label = "FindGroup",
+	text  = "",
+	OnClick = Onclick
+})
 
 function dataobj:OnEnter()
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait = GetLFGQueueStats();
@@ -117,24 +189,24 @@ function dataobj:OnEnter()
 		end
 	elseif (mode == "queued" or mode == "listed") and instanceName then
 		tooltip:AddLine(L["Queued for: "]..instanceName )
-		tooltip:AddLine(" " )
-		tooltip:AddDoubleLine("My wait time",GetTimeString(myWait),1,1,1)
-		tooltip:AddLine(" " )
+		tooltip:AddLine(" ")
+		tooltip:AddDoubleLine(L["Waiting for:"],GetTimeString(timer),1,1,1)
+		tooltip:AddDoubleLine(L["My estimated wait time:"],GetTimeString(myWait),1,1,1)
+		tooltip:AddLine(" ")
 		--yTooltip:AddDoubleLine("Left", "Right", 1,0,0, 0,0,1);
-		tooltip:AddLine("Wait time as:" )
+		tooltip:AddLine(L["Wait time as:"])
 		tooltip:AddDoubleLine(L["DPS"],GetTimeString(damageWait),1,1,1)
 		tooltip:AddDoubleLine(L["Healer"],GetTimeString(healerWait),1,1,1)
 		tooltip:AddDoubleLine(L["Tank"],GetTimeString(tankWait),1,1,1)
 		tooltip:AddLine(" " )
-		tooltip:AddDoubleLine("Average wait time:",GetTimeString(averageWait),1,1,1)
+		--tooltip:AddDoubleLine("Average wait time:",GetTimeString(averageWait),1,1,1)
 	else
 		tooltip:AddLine(L["Click to open the dungeon finder."])
+		tooltip:AddLine(L["Control + right click for options."])
 	end
 	
-	
-	
-	
 	--@debug@
+	--[[
 	tooltip:AddLine(" " )
 	tooltip:AddLine("Debug:")
 	tooltip:AddDoubleLine("instanceType",instanceType)
@@ -142,6 +214,7 @@ function dataobj:OnEnter()
 	--UIDropDownMenu_SetSelectedValue(LFDQueueFrameTypeDropDown, LFDQueueFrame.type);
 	tooltip:AddDoubleLine("GetLFGMode() mode", mode)
 	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
+	--]]
 	--@end-debug@
 	tooltip:Show()
 end
@@ -153,10 +226,16 @@ end
 local function OnEvent(self, event, ...)
 	--DEFAULT_CHAT_FRAME:AddMessage(event)
 	--Debug("OnEvent", event)
-	UpdateText()
+	if event == "PLAYER_ENTERING_WORLD" then
+		Debug("OnEvent", event, ...)
+		db = Broker_FindGroupDB or {showText=1,showTime=1}
+		Broker_FindGroupDB = db
+		frame:UnregisterEvent("PLAYER_ENTERING_WORLD"); 
+	else
+		frame:UpdateText()
+	end
 end
 
-local frame = CreateFrame("Frame")
 frame:SetScript("OnEvent", OnEvent)
 frame:RegisterEvent("LFG_QUEUE_STATUS_UPDATE")
 frame:RegisterEvent("LFG_PROPOSAL_UPDATE");
@@ -169,5 +248,6 @@ frame:RegisterEvent("LFG_ROLE_CHECK_HIDE");
 frame:RegisterEvent("LFG_BOOT_PROPOSAL_UPDATE");
 frame:RegisterEvent("LFG_ROLE_UPDATE");
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO");
+frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 --frame:RegisterAllEvents()
 UpdateText()
