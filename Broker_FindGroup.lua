@@ -120,7 +120,7 @@ local function OpenMenu(parent)
 	
 	dropdownmenu ={ 
 		{
-			text = L["Show Text"], 
+			text = L["Short Instance Name"], 
 			checked = db.showText,
 			func = function() db.showText = not db.showText; UpdateText() end, 
 		},
@@ -250,4 +250,4 @@ frame:RegisterEvent("LFG_ROLE_UPDATE");
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO");
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 --frame:RegisterAllEvents()
-UpdateText()
+frame:UpdateText()

@@ -4,7 +4,7 @@ if not L then return end
 
 L["Show Text"] = true
 L["Show Wait Time"] = true
-L["Short Text"] = true
+L["Short Instance Name"] = true
 
 L["T"] = true
 L["H"] = true
