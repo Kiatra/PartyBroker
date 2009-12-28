@@ -122,17 +122,17 @@ local function OpenMenu(parent)
 		{
 			text = L["Show Instance Name"], 
 			checked = db.showText,
-			func = function() db.showText = not db.showText; UpdateText() end, 
+			func = function() db.showText = not db.showText; frame:UpdateText() end, 
 		},
 		{
 			text = L["Show Wait Time"],
 			checked = db.showTime,
-			func = function() db.showTime = not db.showTime; UpdateText() end,
+			func = function() db.showTime = not db.showTime; frame:UpdateText() end,
 		},
 		{
 			text = L["Short Text"],
 			checked = db.shortText,
-			func = function() db.shortText = not db.shortText; UpdateText() end,
+			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
 		},	
 	}
 	EasyMenu(dropdownmenu, dropdown)
