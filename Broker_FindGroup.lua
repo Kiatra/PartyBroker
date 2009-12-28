@@ -104,8 +104,18 @@ function frame:UpdateText()
 	end
 end
 
+local function Teleport()
+	if ( IsInLFGDungeon() ) then
+		LFGTeleport(true)
+	elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
+		LFGTeleport(false)
+	end
+end
+
+local dropdownmenu
 local function OpenMenu(parent)
 	GameTooltip:Hide()
+	local mode, submode = GetLFGMode()
 	
 	if not dropdown then
 		dropdown = CreateFrame("Frame", "EMPDropDown", nil, "UIDropDownMenuTemplate")
@@ -117,7 +127,33 @@ local function OpenMenu(parent)
 	end
 	
 	dropdown.relativeTo = parent
-	
+	dropdownmenu = {}
+	if mode == "lfgparty" then
+		dropdownmenu[#dropdownmenu + 1] = {
+				text = L["Teleport In/Out"], 
+				func = Teleport,
+		}
+		dropdownmenu[#dropdownmenu + 1] = {
+				text = " ",
+				disabled = true
+		}
+	end
+	dropdownmenu[#dropdownmenu + 1] = {
+			text = L["Show Instance Name"], 
+			checked = db.showText,
+			func = function() db.showText = not db.showText; frame:UpdateText() end,
+	} 
+	dropdownmenu[#dropdownmenu + 1] = {
+			text = L["Show Wait Time"],
+			checked = db.showTime,
+			func = function() db.showTime = not db.showTime; frame:UpdateText() end,
+	}
+	dropdownmenu[#dropdownmenu + 1] = {
+			text = L["Short Text"],
+			checked = db.shortText,
+			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
+	}
+	--[[
 	dropdownmenu ={ 
 		{
 			text = L["Show Instance Name"], 
@@ -135,14 +171,13 @@ local function OpenMenu(parent)
 			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
 		},	
 	}
+	--]]
 	EasyMenu(dropdownmenu, dropdown)
 end
 
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
 		if IsControlKeyDown() then
-			OpenMenu(self)
-		else
 			-- teleport
 			if ( IsInLFGDungeon() ) then
 					LFGTeleport(true)
@@ -158,6 +193,8 @@ local function Onclick(self, button, ...)
 				end
 			--]]
 			end
+		else
+			OpenMenu(self)
 		end
 	else
 		LFDMicroButton:GetScript("OnClick")(self, button, ...) 	
@@ -206,7 +243,6 @@ function dataobj:OnEnter()
 	end
 	
 	--@debug@
-	--[[
 	tooltip:AddLine(" " )
 	tooltip:AddLine("Debug:")
 	tooltip:AddDoubleLine("instanceType",instanceType)
@@ -214,7 +250,6 @@ function dataobj:OnEnter()
 	--UIDropDownMenu_SetSelectedValue(LFDQueueFrameTypeDropDown, LFDQueueFrame.type);
 	tooltip:AddDoubleLine("GetLFGMode() mode", mode)
 	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
-	--]]
 	--@end-debug@
 	tooltip:Show()
 end

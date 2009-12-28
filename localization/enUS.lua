@@ -5,6 +5,7 @@ if not L then return end
 L["Show Instance Name"] = true
 L["Show Wait Time"] = true
 L["Short Text"] = true
+L["Teleport In/Out"] = true
 
 L["T"] = true
 L["H"] = true

@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: Broker: |cff00ff00FindGroup|r 
-## Version: 0.2beta
+## Version: @project-version@
 ## Notes:
 ## Author: yess
 ## X-eMail: yess@fantasymail.de
