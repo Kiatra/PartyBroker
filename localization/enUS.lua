@@ -13,7 +13,7 @@ L["D"] = true
 L["Waiting for:"] = true
 L["My estimated wait time:"] = true
 L["Wait time as:"] = true
-L["Control + right click for options."] = true
+L["Right click for options."] = true
 L["Time"] = true
 
 L["Tank"] = true
@@ -24,7 +24,5 @@ L["In Party"] = true
 L["Assembling group..."] = true
 L["Find Group"] = true
 
-L["Right click to teleport out."] = true
-L["Right click to teleport in."] = true
 L["Queued for: "] = true
 L["Click to open the dungeon finder."] = true

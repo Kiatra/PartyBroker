@@ -217,14 +217,8 @@ function dataobj:OnEnter()
 	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
 	GameTooltip:ClearLines()
 	--dataobj.OnTooltipShow(GameTooltip)
-
-	if mode == "lfgparty" then 
-		if ( IsInLFGDungeon() ) then
-			tooltip:AddLine(L["Right click to teleport out."])
-		elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
-			tooltip:AddLine(L["Right click to teleport in."])
-		end
-	elseif (mode == "queued" or mode == "listed") and instanceName then
+	
+	if (mode == "queued" or mode == "listed") and instanceName then
 		tooltip:AddLine(L["Queued for: "]..instanceName )
 		tooltip:AddLine(" ")
 		tooltip:AddDoubleLine(L["Waiting for:"],GetTimeString(timer),1,1,1)
@@ -239,7 +233,7 @@ function dataobj:OnEnter()
 		--tooltip:AddDoubleLine("Average wait time:",GetTimeString(averageWait),1,1,1)
 	else
 		tooltip:AddLine(L["Click to open the dungeon finder."])
-		tooltip:AddLine(L["Control + right click for options."])
+		tooltip:AddLine(L["Right click for options."])
 	end
 	
 	--@debug@
