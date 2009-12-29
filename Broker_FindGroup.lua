@@ -71,7 +71,7 @@ function frame:UpdateText()
 		else
 			--instanceName = "Custom"
 		end
-		local prefix = db.showText and instanceName and instanceName..": " or ""
+		local prefix = db and db.showText and instanceName and instanceName..": " or ""
 		--[[
 		if db.showText then 
 			prefix = instanceName
@@ -260,9 +260,8 @@ local function OnEvent(self, event, ...)
 		db = Broker_FindGroupDB or {showText=1,showTime=1}
 		Broker_FindGroupDB = db
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD"); 
-	else
-		frame:UpdateText()
 	end
+	frame:UpdateText()
 end
 
 frame:SetScript("OnEvent", OnEvent)
@@ -279,4 +278,3 @@ frame:RegisterEvent("LFG_ROLE_UPDATE");
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO");
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 --frame:RegisterAllEvents()
-frame:UpdateText()
