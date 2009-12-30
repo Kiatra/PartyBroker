@@ -3,7 +3,8 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
 local L = LibStub("AceLocale-3.0"):GetLocale("Broker_FindGroup")
 local dataobj
 local path = "Interface\\AddOns\\Broker_FindGroup\\media\\"
-local db, dropdown
+local db = {}
+local dropdown
 local delay = 1
 local counter = 0
 local timer = 0
@@ -128,7 +129,7 @@ local function OpenMenu(parent)
 	
 	dropdown.relativeTo = parent
 	dropdownmenu = {}
-	if mode == "lfgparty" then
+	if mode == "lfgparty" or mode == "abandonedInDungeon" then
 		dropdownmenu[#dropdownmenu + 1] = {
 				text = L["Teleport In/Out"], 
 				func = Teleport,
@@ -153,25 +154,20 @@ local function OpenMenu(parent)
 			checked = db.shortText,
 			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
 	}
-	--[[
-	dropdownmenu ={ 
-		{
-			text = L["Show Instance Name"], 
-			checked = db.showText,
-			func = function() db.showText = not db.showText; frame:UpdateText() end, 
-		},
-		{
-			text = L["Show Wait Time"],
-			checked = db.showTime,
-			func = function() db.showTime = not db.showTime; frame:UpdateText() end,
-		},
-		{
-			text = L["Short Text"],
-			checked = db.shortText,
-			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
-		},	
+	dropdownmenu[#dropdownmenu + 1] = {
+			text = L["Hide Minimap Button"],
+			checked = db.hideMinimap,
+			func = function() 
+				db.hideMinimap = not db.hideMinimap 
+				if MiniMapLFGFrame then
+					if db.hideMinimap then
+						MiniMapLFGFrame:Hide()
+					else
+						MiniMapLFGFrame:Show()
+					end
+				end
+			end,
 	}
-	--]]
 	EasyMenu(dropdownmenu, dropdown)
 end
 
@@ -257,11 +253,14 @@ local function OnEvent(self, event, ...)
 	--Debug("OnEvent", event)
 	if event == "PLAYER_ENTERING_WORLD" then
 		Debug("OnEvent", event, ...)
-		db = Broker_FindGroupDB or {showText=1,showTime=1}
+		db = Broker_FindGroupDB or {showText=1,showTime=1,hideMinimap=1}
 		Broker_FindGroupDB = db
-		frame:UnregisterEvent("PLAYER_ENTERING_WORLD"); 
+		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end
 	frame:UpdateText()
+	if MiniMapLFGFrame and db.hideMinimap then
+		MiniMapLFGFrame:Hide()
+	end
 end
 
 frame:SetScript("OnEvent", OnEvent)
