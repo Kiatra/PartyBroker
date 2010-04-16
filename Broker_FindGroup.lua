@@ -9,6 +9,7 @@ local delay = 1
 local counter = 0
 local timer = 0
 local frame = CreateFrame("Frame")
+local laststatus = ""
 
 local function Debug(...)
 	 --@debug@
@@ -36,12 +37,13 @@ end
 
 local function OnUpdate(self, elapsed)
 	counter = counter + elapsed
+	timer = timer + elapsed
 	if counter >= delay then
-		timer = timer + 1
+		--timer = timer + 1
 		counter = 0
-	end
-	if db.showTime then 
-		frame:UpdateText()
+		if db.showTime then 
+			frame:UpdateText()
+		end
 	end
 end
 
@@ -92,15 +94,19 @@ function frame:UpdateText()
 		end
 		--dataobj.OnEnter = MiniMapLFGFrame_OnEnter
 	else
-		frame:SetScript("OnUpdate", nil)
-		timer = 0
+		--frame:SetScript("OnUpdate", nil)
 		local mode, submode = GetLFGMode();
 		if mode == "lfgparty" then
-			dataobj.text = L["In Party"]
+			--frame:SetScript("OnUpdate", OnUpdate)
+			dataobj.text = L["In Party"]..": "..GetTimeString(timer)
 		elseif mode == "queued" then
 			dataobj.text = L["Assembling group..."]
 		else
+			local dps = "|TInterface\\AddOns\\Broker_FindGroup\\media\\dps.tga:20|t"
+			local tank = "|TInterface\\AddOns\\Broker_FindGroup\\media\\tank.tga:24|t"
+			local heal = "|TInterface\\AddOns\\Broker_FindGroup\\media\\heal.tga:20|t"
 			dataobj.text = L["Find Group"]
+			timer = 0
 		end
 	end
 end
@@ -250,12 +256,22 @@ end
 
 local function OnEvent(self, event, ...)
 	--DEFAULT_CHAT_FRAME:AddMessage(event)
-	--Debug("OnEvent", event)
+	Debug("OnEvent", event)
 	if event == "PLAYER_ENTERING_WORLD" then
 		Debug("OnEvent", event, ...)
 		db = Broker_FindGroupDB or {showText=1,showTime=1,hideMinimap=1}
 		Broker_FindGroupDB = db
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
+		if laststatus == "complete" then
+			timer = 0
+		end
+		frame:SetScript("OnUpdate", OnUpdate)
+		Debug("OnUpdate", OnUpdate)
+	elseif event == "LFG_COMPLETION_REWARD" then
+		frame:SetScript("OnUpdate", nil)
+		SendChatMessage("Broker_FindGroup: Dungeon completed in: "..GetTimeString(timer),"party",nil,nil)
+		laststatus = "complete"
 	end
 	frame:UpdateText()
 	if MiniMapLFGFrame and db.hideMinimap then
@@ -276,4 +292,6 @@ frame:RegisterEvent("LFG_BOOT_PROPOSAL_UPDATE");
 frame:RegisterEvent("LFG_ROLE_UPDATE");
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO");
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
+frame:RegisterEvent("LFG_COMPLETION_REWARD");
+
 --frame:RegisterAllEvents()
