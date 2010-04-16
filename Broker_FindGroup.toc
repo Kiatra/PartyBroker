@@ -9,6 +9,7 @@
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
 libs\AceLocale-3.0\AceLocale-3.0.xml
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 #@end-no-lib-strip@
 
 localization\enUS.lua
