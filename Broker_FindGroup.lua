@@ -161,6 +161,11 @@ local function OpenMenu(parent)
 			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
 	}
 	dropdownmenu[#dropdownmenu + 1] = {
+			text = L["Report Time to Party"],
+			checked = db.reportTime,
+			func = function() db.reportTime = not db.reportTime; Debug("db.reportTime:", db.reportTime) end,
+	}
+	dropdownmenu[#dropdownmenu + 1] = {
 			text = L["Hide Minimap Button"],
 			checked = db.hideMinimap,
 			func = function() 
@@ -259,7 +264,7 @@ local function OnEvent(self, event, ...)
 	Debug("OnEvent", event)
 	if event == "PLAYER_ENTERING_WORLD" then
 		Debug("OnEvent", event, ...)
-		db = Broker_FindGroupDB or {showText=1,showTime=1,hideMinimap=1}
+		db = Broker_FindGroupDB or {showText=true,showTime=true,hideMinimap=true,reportTime=true}
 		Broker_FindGroupDB = db
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
@@ -270,7 +275,11 @@ local function OnEvent(self, event, ...)
 		Debug("OnUpdate", OnUpdate)
 	elseif event == "LFG_COMPLETION_REWARD" then
 		frame:SetScript("OnUpdate", nil)
-		SendChatMessage("Broker_FindGroup: Dungeon completed in: "..GetTimeString(timer),"party",nil,nil)
+		Debug("db.reportTime:", db.reportTime)
+		if db.reportTime then
+			SendChatMessage("[Broker_FindGroup] "..L["Dungeon completed in"].." :"..GetTimeString(timer),"party",nil,nil)
+		end
+		dataobj.text = L["Completed in"]..": "..GetTimeString(timer)
 		laststatus = "complete"
 	end
 	frame:UpdateText()
