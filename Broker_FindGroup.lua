@@ -277,7 +277,7 @@ local function OnEvent(self, event, ...)
 		frame:SetScript("OnUpdate", nil)
 		Debug("db.reportTime:", db.reportTime)
 		if db.reportTime then
-			SendChatMessage("[Broker_FindGroup] "..L["Dungeon completed in"].." :"..GetTimeString(timer),"party",nil,nil)
+			SendChatMessage("[Broker_FindGroup] "..L["Dungeon completed in"]..": "..GetTimeString(timer),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(timer)
 		laststatus = "complete"
