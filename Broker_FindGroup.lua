@@ -1,6 +1,7 @@
 -- Broker_FindGroup by yess, yessica@fantasymail.de
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
 local L = LibStub("AceLocale-3.0"):GetLocale("Broker_FindGroup")
+local AceCfgDlg = LibStub("AceConfigDialog-3.0")
 local dataobj
 local path = "Interface\\AddOns\\Broker_FindGroup\\media\\"
 local db = {}
@@ -8,8 +9,9 @@ local dropdown
 local delay = 1
 local counter = 0
 local timer = 0
+local waittimer = 0
 local frame = CreateFrame("Frame")
-local laststatus = ""
+local dungeonInProgress = false
 
 local function Debug(...)
 	 --@debug@
@@ -21,6 +23,99 @@ local function Debug(...)
 	DEFAULT_CHAT_FRAME:AddMessage(s)
 	--@end-debug@
 end
+
+local version = GetAddOnMetadata("Broker_FindGroup","X-Curse-Packaged-Version") or ""
+local aceoptions = { 
+    name = "Broker FindGroup".." "..version,
+    handler = Broker_FindGroup,
+	type='group',
+	desc = "Broker FindGroup",
+    args = {
+		hideMinimap = {
+			type = 'toggle',
+			order = 1,
+			name = L["Hide Minimap Button"],
+			desc = L["Hide Minimap Button"],
+			get = function(info, value)
+				return db.hideMinimap
+			end,
+			set = function(info, value)
+				if MiniMapLFGFrame then
+					if value then
+						MiniMapLFGFrame:Hide()
+					else
+						MiniMapLFGFrame:Show()
+					end
+				end
+				db.hideMinimap = value
+			end,
+		},
+		locked = {
+			type = 'toggle',
+			order = 1,
+			name = L["Show Instance Name"],
+			desc = L["Show Instance Name"],
+			get = function(info, value)
+				return db.showText
+			end,
+			set = function(info, value)
+				db.showText = value
+				frame:UpdateText()
+			end,
+		},
+		showTime = {
+			type = 'toggle',
+			order = 1,
+			name = L["Show Wait Time"],
+			desc = L["Show Wait Time"],
+			get = function(info, value)
+				return db.showTime
+			end,
+			set = function(info, value)
+				db.showTime = value
+				frame:UpdateText()
+			end,
+		},
+		display = {
+			type = 'select',
+			order = 1,
+			values = {icons="Icons",text="Text", short="Short Text"},
+			name = L["Display Type"],
+			desc = L["Display Type"],
+			get = function(info, value)
+				return db.display
+			end,
+			set = function(info, value)
+				db.display = value
+				frame:UpdateText()
+			end,
+		},
+		reportTime = {
+			type = 'toggle',
+			order = 1,
+			name = L["Report Time to Party"],
+			desc = L["Report Time to Party"],
+			get = function(info, value)
+				return db.reportTime
+			end,
+			set = function(info, value)
+				db.reportTime = value
+			end,
+		},
+		playAlarm = {
+			type = 'toggle',
+			order = 1,
+			name = L["Play Alert"],
+			desc = L["Play Alert"],
+			get = function(info, value)
+				return db.playAlarm
+			end,
+			set = function(info, value)
+				db.playAlarm = value
+			end,
+		},
+	}
+}
 
 local function GetTimeString(seconds)
 	if seconds > 0 then
@@ -38,8 +133,8 @@ end
 local function OnUpdate(self, elapsed)
 	counter = counter + elapsed
 	timer = timer + elapsed
+	waittimer = waittimer + elapsed
 	if counter >= delay then
-		--timer = timer + 1
 		counter = 0
 		if db.showTime then 
 			frame:UpdateText()
@@ -58,11 +153,18 @@ function frame:UpdateText()
 		local tankColor = green
 		local damageColor = green
 		local healerColor = green
+		
+		local texdps = "|TInterface\\AddOns\\Broker_FindGroup\\media\\dps.tga:20|t"
+		local texdps_grey = "|TInterface\\AddOns\\Broker_FindGroup\\media\\dps_grey.tga:20|t"
+		local textank = "|TInterface\\AddOns\\Broker_FindGroup\\media\\tank.tga:24|t"
+		local texheal = "|TInterface\\AddOns\\Broker_FindGroup\\media\\heal.tga:20|t"
 		if tankNeeds > 0 then
 			tankColor = red
+			textank = "|TInterface\\AddOns\\Broker_FindGroup\\media\\tank_grey.tga:24|t"
 		end
 		if healerNeeds > 0  then
 			healerColor = red
+			texheal = "|TInterface\\AddOns\\Broker_FindGroup\\media\\heal_grey.tga:20|t"
 		end
 		if dpsNeeds > 0 then
 			damageColor = red
@@ -75,20 +177,26 @@ function frame:UpdateText()
 			--instanceName = "Custom"
 		end
 		local prefix = db and db.showText and instanceName and instanceName..": " or ""
-		--[[
-		if db.showText then 
-			prefix = instanceName
-		end
-		--]]
 		local text = ""
-		if db.shortText then
+		if db.display == "icons" then
+			local dpstext = ""
+			for i=1,3 do
+				--Debug("i=",i)
+				if i <= dpshas then
+					dpstext = dpstext..texdps
+				else
+					dpstext = dpstext..texdps_grey
+				end
+			end
+			text = textank..texheal..dpstext
+		elseif db.display == "short" then
 			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["T"], healerColor,L["H"], damageColor,L["D"], dpshas)
 		else
 			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
 		end
 		
 		if db.showTime then
-			dataobj.text = text.." "..L["Time"]..": "..GetTimeString(timer).."/"..GetTimeString(myWait).." "
+			dataobj.text = text.." "..L["Time"]..": "..GetTimeString(waittimer).."/"..GetTimeString(myWait).." "
 		else
 			dataobj.text = text
 		end
@@ -102,11 +210,9 @@ function frame:UpdateText()
 		elseif mode == "queued" then
 			dataobj.text = L["Assembling group..."]
 		else
-			local dps = "|TInterface\\AddOns\\Broker_FindGroup\\media\\dps.tga:20|t"
-			local tank = "|TInterface\\AddOns\\Broker_FindGroup\\media\\tank.tga:24|t"
-			local heal = "|TInterface\\AddOns\\Broker_FindGroup\\media\\heal.tga:20|t"
+			-- not using the lfg at all
 			dataobj.text = L["Find Group"]
-			timer = 0
+			waittimer = 0
 		end
 	end
 end
@@ -121,21 +227,22 @@ end
 
 local dropdownmenu
 local function OpenMenu(parent)
-	GameTooltip:Hide()
-	local mode, submode = GetLFGMode()
-	
-	if not dropdown then
-		dropdown = CreateFrame("Frame", "EMPDropDown", nil, "UIDropDownMenuTemplate")
-		dropdown.xOffset = 0
-		dropdown.yOffset = 0
-		dropdown.point = "TOPLEFT"
-		dropdown.relativePoint = "BOTTOMLEFT"
-		dropdown.displayMode = "MENU"
-	end
-	
-	dropdown.relativeTo = parent
-	dropdownmenu = {}
 	if mode == "lfgparty" or mode == "abandonedInDungeon" then
+		GameTooltip:Hide()
+		local mode, submode = GetLFGMode()
+		
+		if not dropdown then
+			dropdown = CreateFrame("Frame", "EMPDropDown", nil, "UIDropDownMenuTemplate")
+			dropdown.xOffset = 0
+			dropdown.yOffset = 0
+			dropdown.point = "TOPLEFT"
+			dropdown.relativePoint = "BOTTOMLEFT"
+			dropdown.displayMode = "MENU"
+		end
+		
+		dropdown.relativeTo = parent
+		dropdownmenu = {}
+		
 		dropdownmenu[#dropdownmenu + 1] = {
 				text = L["Teleport In/Out"], 
 				func = Teleport,
@@ -144,42 +251,15 @@ local function OpenMenu(parent)
 				text = " ",
 				disabled = true
 		}
+		dropdownmenu[#dropdownmenu + 1] = {
+			text = L["Options"],
+			func = function() InterfaceOptionsFrame_OpenToCategory("Broker FindGroup") end,
+		}	
+		EasyMenu(dropdownmenu, dropdown)
+	else
+		InterfaceOptionsFrame_OpenToCategory("Broker FindGroup")
+		--AceCfgDlg:Open("Broker_FindGroup")
 	end
-	dropdownmenu[#dropdownmenu + 1] = {
-			text = L["Show Instance Name"], 
-			checked = db.showText,
-			func = function() db.showText = not db.showText; frame:UpdateText() end,
-	} 
-	dropdownmenu[#dropdownmenu + 1] = {
-			text = L["Show Wait Time"],
-			checked = db.showTime,
-			func = function() db.showTime = not db.showTime; frame:UpdateText() end,
-	}
-	dropdownmenu[#dropdownmenu + 1] = {
-			text = L["Short Text"],
-			checked = db.shortText,
-			func = function() db.shortText = not db.shortText; frame:UpdateText() end,
-	}
-	dropdownmenu[#dropdownmenu + 1] = {
-			text = L["Report Time to Party"],
-			checked = db.reportTime,
-			func = function() db.reportTime = not db.reportTime; Debug("db.reportTime:", db.reportTime) end,
-	}
-	dropdownmenu[#dropdownmenu + 1] = {
-			text = L["Hide Minimap Button"],
-			checked = db.hideMinimap,
-			func = function() 
-				db.hideMinimap = not db.hideMinimap 
-				if MiniMapLFGFrame then
-					if db.hideMinimap then
-						MiniMapLFGFrame:Hide()
-					else
-						MiniMapLFGFrame:Show()
-					end
-				end
-			end,
-	}
-	EasyMenu(dropdownmenu, dropdown)
 end
 
 local function Onclick(self, button, ...) 
@@ -223,7 +303,6 @@ function dataobj:OnEnter()
 	GameTooltip:SetOwner(self, "ANCHOR_NONE")
 	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
 	GameTooltip:ClearLines()
-	--dataobj.OnTooltipShow(GameTooltip)
 	
 	if (mode == "queued" or mode == "listed") and instanceName then
 		tooltip:AddLine(L["Queued for: "]..instanceName )
@@ -231,13 +310,11 @@ function dataobj:OnEnter()
 		tooltip:AddDoubleLine(L["Waiting for:"],GetTimeString(timer),1,1,1)
 		tooltip:AddDoubleLine(L["My estimated wait time:"],GetTimeString(myWait),1,1,1)
 		tooltip:AddLine(" ")
-		--yTooltip:AddDoubleLine("Left", "Right", 1,0,0, 0,0,1);
 		tooltip:AddLine(L["Wait time as:"])
 		tooltip:AddDoubleLine(L["DPS"],GetTimeString(damageWait),1,1,1)
 		tooltip:AddDoubleLine(L["Healer"],GetTimeString(healerWait),1,1,1)
 		tooltip:AddDoubleLine(L["Tank"],GetTimeString(tankWait),1,1,1)
 		tooltip:AddLine(" " )
-		--tooltip:AddDoubleLine("Average wait time:",GetTimeString(averageWait),1,1,1)
 	else
 		tooltip:AddLine(L["Click to open the dungeon finder."])
 		tooltip:AddLine(L["Right click for options."])
@@ -248,7 +325,6 @@ function dataobj:OnEnter()
 	tooltip:AddLine("Debug:")
 	tooltip:AddDoubleLine("instanceType",instanceType)
 	tooltip:AddDoubleLine("LFDQueueFrame.type",LFDQueueFrame.type)
-	--UIDropDownMenu_SetSelectedValue(LFDQueueFrameTypeDropDown, LFDQueueFrame.type);
 	tooltip:AddDoubleLine("GetLFGMode() mode", mode)
 	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
 	--@end-debug@
@@ -260,27 +336,44 @@ function dataobj:OnLeave()
 end
 
 local function OnEvent(self, event, ...)
-	--DEFAULT_CHAT_FRAME:AddMessage(event)
-	Debug("OnEvent", event)
 	if event == "PLAYER_ENTERING_WORLD" then
-		Debug("OnEvent", event, ...)
-		db = Broker_FindGroupDB or {showText=true,showTime=true,hideMinimap=true,reportTime=true}
+		--Debug("OnEvent", event, ...)
+		db = Broker_FindGroupDB or {display="icons",showTime=true,hideMinimap=true,reportTime=true,playAlarm=true}
 		Broker_FindGroupDB = db
+		LibStub("AceConfig-3.0"):RegisterOptionsTable("Broker_FindGroup", aceoptions)
+		AceCfgDlg:AddToBlizOptions("Broker_FindGroup", "Broker FindGroup")
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	--elseif event == "LFG_PROPOSAL_UPDATE" then
+	--	local proposalExists, typeID, id, name, texture, role, hasResponded, totalEncounters, completedEncounters, numMembers, isLeader = GetLFGProposal();
+	--	Debug("typeID=",typeID,"id=",id,"name=",name,"hasResponded=",hasResponded,"totalEncounters=",totalEncounters,"completedEncounters=",completedEncounters)
+	--elseif event == "LFG_PROPOSAL_FAILED" then
+	elseif event == "LFG_PROPOSAL_SHOW" then
+		if db.playAlarm then
+			PlaySoundFile("Interface\\AddOns\\Broker_FindGroup\\media\\alert.mp3")
+		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
-		if laststatus == "complete" then
+		-- going in or new player
+		if not dungeonInProgress then
 			timer = 0
+			dungeonInProgress = true
 		end
 		frame:SetScript("OnUpdate", OnUpdate)
-		Debug("OnUpdate", OnUpdate)
 	elseif event == "LFG_COMPLETION_REWARD" then
+		-- dungeon done (random only)
 		frame:SetScript("OnUpdate", nil)
-		Debug("db.reportTime:", db.reportTime)
 		if db.reportTime then
-			SendChatMessage("[Broker_FindGroup] "..L["Dungeon completed in"]..": "..GetTimeString(timer),"party",nil,nil)
+			SendChatMessage(L["Dungeon completed in"]..": "..GetTimeString(timer),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(timer)
-		laststatus = "complete"
+		dungeonInProgress = false
+	--elseif event == "LFG_BOOT_PROPOSAL_UPDATE" then
+	--	local inProgress, didVote, myVote, targetName, totalVotes, bootVotes, timeLeft, reason = GetLFGBootProposal();
+	--	Debug(inProgress, didVote, myVote, targetName, totalVotes, bootVotes, timeLeft, reason);
+	elseif event == "PARTY_MEMBERS_CHANGED" then
+		--leave party
+		if GetNumPartyMembers() == 0 then
+			dungeonInProgress = false
+		end
 	end
 	frame:UpdateText()
 	if MiniMapLFGFrame and db.hideMinimap then
@@ -302,5 +395,4 @@ frame:RegisterEvent("LFG_ROLE_UPDATE");
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO");
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");
 frame:RegisterEvent("LFG_COMPLETION_REWARD");
-
---frame:RegisterAllEvents()
+frame:RegisterEvent("PARTY_MEMBERS_CHANGED");

@@ -2,6 +2,10 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("Broker_FindGroup", "enUS", true)
 if not L then return end
 
+L["Play Alert"] = true
+L["Options"] = true
+L["Display Type"] = true
+
 L["Report Time to Party"] = true
 L["Dungeon completed in"] = true
 L["Completed in"] = true
