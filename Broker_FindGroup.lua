@@ -227,6 +227,7 @@ end
 
 local dropdownmenu
 local function OpenMenu(parent)
+	local mode, submode = GetLFGMode();
 	if mode == "lfgparty" or mode == "abandonedInDungeon" then
 		GameTooltip:Hide()
 		local mode, submode = GetLFGMode()
@@ -307,7 +308,7 @@ function dataobj:OnEnter()
 	if (mode == "queued" or mode == "listed") and instanceName then
 		tooltip:AddLine(L["Queued for: "]..instanceName )
 		tooltip:AddLine(" ")
-		tooltip:AddDoubleLine(L["Waiting for:"],GetTimeString(timer),1,1,1)
+		tooltip:AddDoubleLine(L["Waiting for:"],GetTimeString(waittimer),1,1,1)
 		tooltip:AddDoubleLine(L["My estimated wait time:"],GetTimeString(myWait),1,1,1)
 		tooltip:AddLine(" ")
 		tooltip:AddLine(L["Wait time as:"])
