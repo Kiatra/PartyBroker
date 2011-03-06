@@ -14,12 +14,6 @@ libs\AceConfig-3.0\AceConfig-3.0.xml
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 #@end-no-lib-strip@
 
-localization\enUS.lua
-localization\deDE.lua
-localization\frFR.lua
-localization\koKR.lua
-localization\ruRU.lua
-localization\zhTW.lua
-
+localization.lua
 LibDataBroker-1.1.lua
 Broker_FindGroup.lua

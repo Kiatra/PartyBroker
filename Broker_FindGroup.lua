@@ -322,12 +322,14 @@ function dataobj:OnEnter()
 	end
 	
 	--@debug@
+	--[[
 	tooltip:AddLine(" " )
 	tooltip:AddLine("Debug:")
 	tooltip:AddDoubleLine("instanceType",instanceType)
 	tooltip:AddDoubleLine("LFDQueueFrame.type",LFDQueueFrame.type)
 	tooltip:AddDoubleLine("GetLFGMode() mode", mode)
 	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
+	--]]
 	--@end-debug@
 	tooltip:Show()
 end
