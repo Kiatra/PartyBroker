@@ -24,7 +24,6 @@ if L then
 	L["Waiting for:"] = true
 	L["My estimated wait time:"] = true
 	L["Wait time as:"] = true
-	L["Right click for options."] = true
 	L["Time"] = true
 	L["Tank"] = true
 	L["Healer"] = true
@@ -34,52 +33,54 @@ if L then
 	L["Find Group"] = true
 	L["Queued for: "] = true
 	L["Click to open the dungeon finder."] = true
+	L["Ctrl-Click or Middle-Click Teleport."] = true
+	L["Right-Click for options."] = true
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "deDE")
 if L then 
-	--@localization(locale="deDE", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="deDE", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "frFR")
 if L then
-	--@localization(locale="frFR", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="frFR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "koKR")
 if L then
-	--@localization(locale="koKR", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="koKR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "zhTW")
 if L then
-	--@localization(locale="zhTW", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="zhTW", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "zhCN")
 if L then
-	--@localization(locale="zhCN", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="zhCN", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "ruRU")
 if L then
-	--@localization(locale="ruRU", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="ruRU", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "esES")
 if L then
-	--@localization(locale="esES", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="esES", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("Broker_FindGroup", "esMX")
 if L then
-	--@localization(locale="esMX", format="lua_additive_table", handle-subnamespaces="concat")@
+	--@localization(locale="esMX", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end

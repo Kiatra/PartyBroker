@@ -218,11 +218,18 @@ function frame:UpdateText()
 end
 
 local function Teleport()
+	if IsInInstance() then
+		LFGTeleport(true)
+	else
+		LFGTeleport(false)
+	end
+	--[[
 	if ( IsInLFGDungeon() ) then
 		LFGTeleport(true)
 	elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
 		LFGTeleport(false)
 	end
+	--]]
 end
 
 local dropdownmenu
@@ -265,27 +272,15 @@ end
 
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
+		InterfaceOptionsFrame_OpenToCategory("Broker FindGroup")
+	elseif button == "MiddleButton" then
+		Teleport()
+	else --left click
 		if IsControlKeyDown() then
-			-- teleport
-			if ( IsInLFGDungeon() ) then
-					LFGTeleport(true)
-			elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
-					LFGTeleport(false)
-			--[[
-			else -- or join/leave
-				local mode, submode = GetLFGMode();
-				if not mode then
-					LFDQueueFrameFindGroupButton:GetScript("OnClick")(self, button, ...)
-				elseif mode == "queued" or mode == "listed" then
-					LeaveLFG()
-				end
-			--]]
-			end
+			Teleport()
 		else
-			OpenMenu(self)
+			LFDMicroButton:GetScript("OnClick")(self, button, ...) 	
 		end
-	else
-		LFDMicroButton:GetScript("OnClick")(self, button, ...) 	
 	end
 end
 
@@ -318,7 +313,8 @@ function dataobj:OnEnter()
 		tooltip:AddLine(" " )
 	else
 		tooltip:AddLine(L["Click to open the dungeon finder."])
-		tooltip:AddLine(L["Right click for options."])
+		tooltip:AddLine(L["Ctrl-Click or Middle-Click Teleport."])
+		tooltip:AddLine(L["Right-Click for options."])
 	end
 	
 	--@debug@
