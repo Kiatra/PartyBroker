@@ -7,9 +7,7 @@ local path = "Interface\\AddOns\\Broker_FindGroup\\media\\"
 local db = {}
 local dropdown
 local delay = 1
-local counter = 0
-local timer = 0
-local waittimer = 0
+local counter, timer, waittimer  = 0, 0, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
 
@@ -223,13 +221,6 @@ local function Teleport()
 	else
 		LFGTeleport(false)
 	end
-	--[[
-	if ( IsInLFGDungeon() ) then
-		LFGTeleport(true)
-	elseif ((GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0)) then
-		LFGTeleport(false)
-	end
-	--]]
 end
 
 local dropdownmenu
@@ -284,21 +275,10 @@ local function Onclick(self, button, ...)
 	end
 end
 
-dataobj = ldb:NewDataObject("Broker_FindGroup", {
-	type = "data source",
-	icon = path.."lfg.tga",
-	label = "FindGroup",
-	text  = "",
-	OnClick = Onclick
-})
-
-function dataobj:OnEnter()
+local function OnEnter()
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait = GetLFGQueueStats();
 	local mode, submode = GetLFGMode();
 	local tooltip = GameTooltip 
-	GameTooltip:SetOwner(self, "ANCHOR_NONE")
-	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
-	GameTooltip:ClearLines()
 	
 	if (mode == "queued" or mode == "listed") and instanceName then
 		tooltip:AddLine(L["Queued for: "]..instanceName )
@@ -327,12 +307,17 @@ function dataobj:OnEnter()
 	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
 	--]]
 	--@end-debug@
-	tooltip:Show()
+	--tooltip:Show()
 end
 
-function dataobj:OnLeave()
-	GameTooltip:Hide()
-end
+dataobj = ldb:NewDataObject("Broker_FindGroup", {
+	type = "data source",
+	icon = path.."lfg.tga",
+	label = "FindGroup",
+	text  = "",
+	OnClick = Onclick,
+	OnTooltipShow = OnEnter
+})
 
 local function OnEvent(self, event, ...)
 	if event == "PLAYER_ENTERING_WORLD" then
@@ -360,7 +345,7 @@ local function OnEvent(self, event, ...)
 	elseif event == "LFG_COMPLETION_REWARD" then
 		-- dungeon done (random only)
 		frame:SetScript("OnUpdate", nil)
-		if db.reportTime then
+		if db.reportTime and timer > 0 then
 			SendChatMessage(L["Dungeon completed in"]..": "..GetTimeString(timer),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(timer)
