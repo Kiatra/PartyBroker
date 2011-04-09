@@ -333,7 +333,7 @@ local function OnEvent(self, event, ...)
 	--elseif event == "LFG_PROPOSAL_FAILED" then
 	elseif event == "LFG_PROPOSAL_SHOW" then
 		if db.playAlarm then
-			PlaySoundFile("Interface\\AddOns\\Broker_FindGroup\\media\\alert.mp3")
+			PlaySoundFile("Interface\\AddOns\\Broker_FindGroup\\media\\alert.mp3","Master")
 		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
 		-- going in or new player
