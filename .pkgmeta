@@ -1,4 +1,4 @@
-package-as: Broker_FindGroup
+package-as: DungeonHelper
 
 externals:
     libs/LibStub:

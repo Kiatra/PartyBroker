@@ -1,10 +1,13 @@
 
--- CHANGES TO LOCALIZATION SHOULD BE MADE USING http://www.wowace.com/addons/broker_findGroup/localization/
+-- CHANGES TO LOCALIZATION SHOULD BE MADE USING http://www.wowace.com/addons/Broker_FindGroup/localization/
 
 local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
-local L = AceLocale:NewLocale("Broker_FindGroup", "enUS", true)
+local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
+	L["General"] = true
+	L["Data Broker"] = true
+	
 	L["Play Alert"] = true
 	L["Options"] = true
 	L["Display Type"] = true
@@ -37,49 +40,49 @@ if L then
 	L["Right-Click for options."] = true
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "deDE")
+local L = AceLocale:NewLocale("DungeonHelper", "deDE")
 if L then 
 	--@localization(locale="deDE", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "frFR")
+local L = AceLocale:NewLocale("DungeonHelper", "frFR")
 if L then
 	--@localization(locale="frFR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "koKR")
+local L = AceLocale:NewLocale("DungeonHelper", "koKR")
 if L then
 	--@localization(locale="koKR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "zhTW")
+local L = AceLocale:NewLocale("DungeonHelper", "zhTW")
 if L then
 	--@localization(locale="zhTW", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "zhCN")
+local L = AceLocale:NewLocale("DungeonHelper", "zhCN")
 if L then
 	--@localization(locale="zhCN", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "ruRU")
+local L = AceLocale:NewLocale("DungeonHelper", "ruRU")
 if L then
 	--@localization(locale="ruRU", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "esES")
+local L = AceLocale:NewLocale("DungeonHelper", "esES")
 if L then
 	--@localization(locale="esES", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
-local L = AceLocale:NewLocale("Broker_FindGroup", "esMX")
+local L = AceLocale:NewLocale("DungeonHelper", "esMX")
 if L then
 	--@localization(locale="esMX", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
