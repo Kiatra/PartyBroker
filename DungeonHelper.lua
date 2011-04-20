@@ -1,16 +1,19 @@
--- DungeonHelper by yess, yessica@fantasymail.de
+-- DungeonHelper by yess, starfire@fantasymail.de
+local LibStub = LibStub
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
 local L = LibStub("AceLocale-3.0"):GetLocale("DungeonHelper")
 local AceCfgDlg = LibStub("AceConfigDialog-3.0")
-local dataobj
 local path = "Interface\\AddOns\\DungeonHelper\\media\\"
 local db = {}
-local dropdown
-local delay = 1
-local counter =  0	
+local candy, porposalBar, dataobj
+local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
-local StartTime = 0
+local startTime = 0
+local _G, select, string, mod, tostring, type = _G, select, string, mod, tostring, type
+local MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame = MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame
+local GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards = GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards
+--GLOBALS: strjoin, LFDSearchStatus_Update, 
 
 local function Debug(...)
 	 --@debug@
@@ -19,7 +22,7 @@ local function Debug(...)
 		local x = select(i, ...)
 		s = strjoin(" ",s,tostring(x))
 	end
-	DEFAULT_CHAT_FRAME:AddMessage(s)
+	_G.DEFAULT_CHAT_FRAME:AddMessage(s)
 	--@end-debug@
 end
 
@@ -167,11 +170,10 @@ function frame:UpdateText()
 		local tankColor = green
 		local damageColor = green
 		local healerColor = green
-		
-		local texdps = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:16:32:0:16|t"
-		local texdps_grey = "|TInterface\\AddOns\\DungeonHelper\\media\\dps_grey.tga:18:18:0:0|t"
 		local textank = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:32:48:0:16|t"
 		local texheal = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:48:64:0:16|t"
+		local texdps = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:16:32:0:16|t"
+		local texdps_grey = "|TInterface\\AddOns\\DungeonHelper\\media\\dps_grey.tga:18:18:0:0|t"
 		
 		if tankNeeds > 0 then
 			tankColor = red
@@ -222,40 +224,57 @@ function frame:UpdateText()
 		local mode, submode = GetLFGMode();
 		if mode == "lfgparty" then
 			--frame:SetScript("OnUpdate", OnUpdate)
-			dataobj.text = L["In Party"]..": "..GetTimeString(GetTime() - StartTime)
+			dataobj.text = L["In Party"]..": "..GetTimeString(GetTime() - startTime)
 		elseif mode == "queued" then
 			dataobj.text = L["Assembling group..."]
-		else
-			-- not using the lfg at all
-			dataobj.text = L["Find Group"]
+		else -- not using the LFD at all
+			if GetLFGRoleShortageRewards then
+				local text = L["Find Group"]
+				local dungeonID = LFDQueueFrame.type
+				
+				--local textank = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:32:48:0:16|t"
+				--local texheal = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:48:64:0:16|t"
+				--local texdps = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:16:32:0:16|t"
+				--/dump GetLFGRoleShortageRewards(LFDQueueFrame.type, 1)
+				if ( type(dungeonID) == "number" ) then
+					--for i=1, LFG_ROLE_NUM_SHORTAGE_TYPES do
+					local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(dungeonID, 1)
+					if ( forTank ) then
+						text = text.." ".."|TInterface\\LFGFrame\\LFGRole:14:14:0:0:64:16:32:48:0:16|t"
+					end
+					if ( forHealer ) then
+						text = text.." ".."|TInterface\\LFGFrame\\LFGRole:14:14:0:0:64:16:48:64:0:16|t"
+					end
+					if ( forDamage ) then
+						text = text.." ".."|TInterface\\LFGFrame\\LFGRole:14:14:0:0:64:16:16:32:0:16|t"
+					end
+				end
+				dataobj.text = text
+			else
+				dataobj.text = L["Find Group"]
+			end
 		end
 	end
 end
 
 local function Teleport()
-	if IsInInstance() then
-		LFGTeleport(true)
+	if _G.IsInInstance() then
+		_G.LFGTeleport(true)
 	else
-		LFGTeleport(false)
+		_G.LFGTeleport(false)
 	end
 end
 
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
-		InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")
-		--for i,child in ipairs({LFDSearchStatus:GetChildren()}) do
-		--	Debug(child:GetName())
-		--end
-		--MiniMapLFGFrameIcon
-		--MiniMapLFGFrameDropDown
-		--LFDSearchStatus
+		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")
 	elseif button == "MiddleButton" then
 		Teleport()
 	else --left click
-		if IsControlKeyDown() then
+		if _G.IsControlKeyDown() then
 			Teleport()
 		else
-			LFDMicroButton:GetScript("OnClick")(self, button, ...) 	
+			_G.LFDMicroButton:GetScript("OnClick")(self, button, ...)
 		end
 	end
 end
@@ -274,7 +293,7 @@ local function MyLFDSearchStatus_Update(...)
 	LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
 	
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
-	LFDSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
+	_G.LFDSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
 	if hasData then
 		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:48:64:0:16|t %s", healerWait == -1 and TIME_UNKNOWN or SecondsToTime(healerWait, false, false, 1))			
@@ -301,7 +320,7 @@ local function OnEnter(anchor)
 		LFDSearchStatus:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
 		LFDSearchStatus:Show()
 	else
-		local tooltip = GameTooltip 
+		local tooltip = _G.GameTooltip 
 		tooltip:SetOwner(anchor, "ANCHOR_NONE")
 		tooltip:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
 		tooltip:AddLine(L["Click to open the dungeon finder."])
@@ -309,24 +328,13 @@ local function OnEnter(anchor)
 		tooltip:AddLine(L["Right-Click for options."])
 		tooltip:Show()
 	end
-	
-	--@debug@
-	--[[
-	tooltip:AddLine(" " )
-	tooltip:AddLine("Debug:")
-	tooltip:AddDoubleLine("instanceType",instanceType)
-	tooltip:AddDoubleLine("LFDQueueFrame.type",LFDQueueFrame.type)
-	tooltip:AddDoubleLine("GetLFGMode() mode", mode)
-	tooltip:AddDoubleLine("GetLFGMode() submode", submode)
-	--]]
-	--@end-debug@
 end
 
 local function OnLeave()
 	LFDSearchStatus:ClearAllPoints()
 	LFDSearchStatus:SetPoint("TOPRIGHT", MiniMapLFGFrame, "TOPLEFT")
 	LFDSearchStatus:Hide()
-	GameTooltip:Hide()
+	_G.GameTooltip:Hide()
 end
 
 dataobj = ldb:NewDataObject("DungeonHelper", {
@@ -343,40 +351,50 @@ dataobj = ldb:NewDataObject("DungeonHelper", {
 local function OnEvent(self, event, ...)
 	if event == "PLAYER_ENTERING_WORLD" then
 		--Debug("OnEvent", event, ...)
-		db = Broker_FindGroupDB or DungeonHelperDB or {display="icons",showTime=true,hideMinimap=false,reportTime=true,playAlarm=true}
-		DungeonHelperDB = db
-		Broker_FindGroupDB = nil
+		db = _G.DungeonHelperDB or {display="icons",showTime=true,hideMinimap=false,reportTime=true,playAlarm=true}
+		_G.DungeonHelperDB = db
 		LibStub("AceConfig-3.0"):RegisterOptionsTable("DungeonHelper", aceoptions)
 		AceCfgDlg:AddToBlizOptions("DungeonHelper", "Dungeon Helper")
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	--elseif event == "LFG_PROPOSAL_UPDATE" then
-	--elseif event == "LFG_PROPOSAL_FAILED" then
+	elseif event == "LFG_PROPOSAL_FAILED" then
+		porposalBar:Stop()
 	--elseif event == "LFG_BOOT_PROPOSAL_UPDATE" then
 	elseif event == "LFG_PROPOSAL_SHOW" then
+		local candy = candy or LibStub("LibCandyBar-3.0")
+		porposalBar = candy:New("Interface\\AddOns\\ChocolateBar\\pics\\DarkBottom", _G.LFDDungeonReadyPopup:GetWidth()-5, 14)
+		porposalBar:SetPoint("CENTER",0,120)
+		--porposalBar:SetStrata("FULLSCREEN_DIALOG")
+		porposalBar:SetColor(1, 0, 0, 1)
+		porposalBar:SetLabel("Remaning...")
+		porposalBar:SetDuration(40)
+		--mybar:AddUpdateFunction( function(bar) Debug(bar.remaining) end )
+		porposalBar:Start()
 		if db.playAlarm then
-			PlaySoundFile("Interface\\AddOns\\DungeonHelper\\media\\alert.mp3","Master")
+			_G.PlaySoundFile("Interface\\AddOns\\DungeonHelper\\media\\alert.mp3","Master")
 		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
+		porposalBar:Stop()
 		-- going in or new player
 		if not dungeonInProgress then
 			--timer = 0
-			StartTime = GetTime()
+			startTime = GetTime()
 			dungeonInProgress = true
 		end
 		frame:SetScript("OnUpdate", OnUpdate)
 	elseif event == "LFG_COMPLETION_REWARD" then
 		-- dungeon done (random only)
 		frame:SetScript("OnUpdate", nil)
-		local dur = GetTime() - StartTime
+		local dur = GetTime() - startTime
 		if db.reportTime and dur > 0 then
-			SendChatMessage(L["Dungeon completed in"]..": "..GetTimeString(dur),"party",nil,nil)
+			_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeString(dur),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false
 	
 	elseif event == "PARTY_MEMBERS_CHANGED" then
 		--leave party
-		if GetNumPartyMembers() == 0 then
+		if _G.GetNumPartyMembers() == 0 then
 			dungeonInProgress = false
 		end
 	end

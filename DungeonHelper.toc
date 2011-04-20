@@ -3,8 +3,8 @@
 ## Version: @project-version@
 ## Notes:
 ## Author: yess
-## X-eMail: yess@fantasymail.de
-## SavedVariables: DungeonHelperDB, Broker_FindGroupDB
+## X-eMail: starfire@fantasymail.de
+## SavedVariables: DungeonHelperDB
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
