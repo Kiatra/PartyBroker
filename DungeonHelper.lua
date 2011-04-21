@@ -318,6 +318,8 @@ local function OnEnter(anchor)
 		local LFDSearchStatus = LFDSearchStatus
 		LFDSearchStatus:ClearAllPoints()
 		LFDSearchStatus:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
+		LFDSearchStatus:SetParent(anchor)
+		LFDSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
 		LFDSearchStatus:Show()
 	else
 		local tooltip = _G.GameTooltip 
@@ -333,6 +335,8 @@ end
 local function OnLeave()
 	LFDSearchStatus:ClearAllPoints()
 	LFDSearchStatus:SetPoint("TOPRIGHT", MiniMapLFGFrame, "TOPLEFT")
+	LFDSearchStatus:SetParent(MiniMapLFGFrame)
+	LFDSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
 	LFDSearchStatus:Hide()
 	_G.GameTooltip:Hide()
 end
