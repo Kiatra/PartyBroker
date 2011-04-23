@@ -5,7 +5,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("DungeonHelper")
 local AceCfgDlg = LibStub("AceConfigDialog-3.0")
 local path = "Interface\\AddOns\\DungeonHelper\\media\\"
 local db = {}
-local candy, porposalBar, dataobj
+local candy = LibStub("LibCandyBar-3.0")
+local porposalBar, dataobj
 local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
@@ -82,6 +83,18 @@ local aceoptions = {
 						db.playAlarm = value
 					end,
 				},
+				timerBar = {
+					type = 'toggle',
+					order = 1,
+					name = L["Show Timer Bar"],
+					desc = L["Show Timer Bar"],
+					get = function(info, value)
+						return db.showTimerBar
+					end,
+					set = function(info, value)
+						db.showTimerBar = value
+					end,
+				},
 			},
 		},
 		databroker = {
@@ -134,6 +147,12 @@ local aceoptions = {
 		},
 	}
 }
+
+local function barstopped( callback, bar )
+  --print( bar.candybarLabel:GetText(), "stopped")
+  Debug("stopped")
+  porposalBar = nil
+end
 
 local function GetTimeString(seconds)
 	if seconds > 0 then
@@ -355,31 +374,32 @@ dataobj = ldb:NewDataObject("DungeonHelper", {
 local function OnEvent(self, event, ...)
 	if event == "PLAYER_ENTERING_WORLD" then
 		--Debug("OnEvent", event, ...)
-		db = _G.DungeonHelperDB or {display="icons",showTime=true,hideMinimap=false,reportTime=true,playAlarm=true}
+		db = _G.DungeonHelperDB or {display="icons",showTime=true,hideMinimap=false,reportTime=true,playAlarm=true,showTimerBar=true}
 		_G.DungeonHelperDB = db
 		LibStub("AceConfig-3.0"):RegisterOptionsTable("DungeonHelper", aceoptions)
 		AceCfgDlg:AddToBlizOptions("DungeonHelper", "Dungeon Helper")
+		candy:RegisterCallback("LibCandyBar_Stop", barstopped)
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
-	--elseif event == "LFG_PROPOSAL_UPDATE" then
 	elseif event == "LFG_PROPOSAL_FAILED" then
-		porposalBar:Stop()
-	--elseif event == "LFG_BOOT_PROPOSAL_UPDATE" then
+		if porposalBar then porposalBar:Stop() end
 	elseif event == "LFG_PROPOSAL_SHOW" then
-		local candy = candy or LibStub("LibCandyBar-3.0")
-		porposalBar = candy:New("Interface\\AddOns\\ChocolateBar\\pics\\DarkBottom", _G.LFDDungeonReadyPopup:GetWidth()-5, 14)
-		porposalBar:SetPoint("CENTER",0,120)
-		--porposalBar:SetStrata("FULLSCREEN_DIALOG")
-		porposalBar:SetColor(1, 0, 0, 1)
-		porposalBar:SetLabel(L["Remaining"].."...")
-		porposalBar:SetDuration(40)
-		--mybar:AddUpdateFunction( function(bar) Debug(bar.remaining) end )
-		porposalBar:Start()
 		if db.playAlarm then
 			_G.PlaySoundFile("Interface\\AddOns\\DungeonHelper\\media\\alert.mp3","Master")
 		end
+		Debug(db.showTimerBar,candy)
+		if db.showTimerBar and candy then
+			porposalBar = candy:New("Interface\\AddOns\\ChocolateBar\\pics\\DarkBottom", _G.LFDDungeonReadyPopup:GetWidth()-5, 14)
+			porposalBar:SetPoint("CENTER",0,120)
+			porposalBar:SetFrameStrata("FULLSCREEN_DIALOG")
+			porposalBar:SetColor(1, 0, 0, 1)
+			porposalBar:SetLabel(L["Remaining"].."...")
+			porposalBar:SetDuration(39)
+			porposalBar:Set("anchor",nil)
+			porposalBar:Start()
+		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
-		porposalBar:Stop()
 		-- going in or new player
+		if porposalBar then porposalBar:Stop() end
 		if not dungeonInProgress then
 			--timer = 0
 			startTime = GetTime()
@@ -395,7 +415,6 @@ local function OnEvent(self, event, ...)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false
-	
 	elseif event == "PARTY_MEMBERS_CHANGED" then
 		--leave party
 		if _G.GetNumPartyMembers() == 0 then
@@ -411,13 +430,13 @@ end
 frame:SetScript("OnEvent", OnEvent)
 frame:RegisterEvent("LFG_QUEUE_STATUS_UPDATE")
 frame:RegisterEvent("LFG_PROPOSAL_UPDATE");
+frame:RegisterEvent("LFG_BOOT_PROPOSAL_UPDATE");
 frame:RegisterEvent("LFG_PROPOSAL_SHOW");
 frame:RegisterEvent("LFG_PROPOSAL_FAILED");
 frame:RegisterEvent("LFG_PROPOSAL_SUCCEEDED");
 frame:RegisterEvent("LFG_UPDATE");
 frame:RegisterEvent("LFG_ROLE_CHECK_SHOW");
 frame:RegisterEvent("LFG_ROLE_CHECK_HIDE");
-frame:RegisterEvent("LFG_BOOT_PROPOSAL_UPDATE");
 frame:RegisterEvent("LFG_ROLE_UPDATE");
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO");
 frame:RegisterEvent("PLAYER_ENTERING_WORLD");

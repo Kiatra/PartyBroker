@@ -12,6 +12,7 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceGUI-3.0\AceGUI-3.0.xml
 libs\AceConfig-3.0\AceConfig-3.0.xml
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\LibCandyBar-3.0\bars.lua
 #@end-no-lib-strip@
 
 localization.lua

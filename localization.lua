@@ -5,8 +5,9 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
-	L["Remaining"] = true
+	L["Show Timer Bar"] = true
 	
+	L["Remaining"] = true
 	L["General"] = true
 	L["Data Broker"] = true
 	L["Play Alert"] = true
