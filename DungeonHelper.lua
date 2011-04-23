@@ -5,7 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("DungeonHelper")
 local AceCfgDlg = LibStub("AceConfigDialog-3.0")
 local path = "Interface\\AddOns\\DungeonHelper\\media\\"
 local db = {}
-local candy = LibStub("LibCandyBar-3.0")
+local candy
 local porposalBar, dataobj
 local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
@@ -378,6 +378,7 @@ local function OnEvent(self, event, ...)
 		_G.DungeonHelperDB = db
 		LibStub("AceConfig-3.0"):RegisterOptionsTable("DungeonHelper", aceoptions)
 		AceCfgDlg:AddToBlizOptions("DungeonHelper", "Dungeon Helper")
+		candy = LibStub("LibCandyBar-3.0")
 		candy:RegisterCallback("LibCandyBar_Stop", barstopped)
 		frame:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	elseif event == "LFG_PROPOSAL_FAILED" then
