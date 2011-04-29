@@ -5,8 +5,11 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
-	L["Show Timer Bar"] = true
+	L["Icon Size"] = true
+	L["Zandalari"] = true
+	L["Cata"] = true
 	
+	L["Show Timer Bar"] = true
 	L["Remaining"] = true
 	L["General"] = true
 	L["Data Broker"] = true
@@ -34,7 +37,6 @@ if L then
 	L["Healer"] = true
 	L["DPS"] = true
 	L["In Party"] = true
-	L["Assembling group..."] = true
 	L["Find Group"] = true
 	L["Queued for: "] = true
 	L["Click to open the dungeon finder."] = true
