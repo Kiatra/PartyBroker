@@ -189,18 +189,18 @@ function frame:UpdateText()
 		local tankColor = green
 		local damageColor = green
 		local healerColor = green
-		local textank = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:32:48:0:16|t"
-		local texheal = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:48:64:0:16|t"
-		local texdps = "|TInterface\\LFGFrame\\LFGRole:18:18:0:0:64:16:16:32:0:16|t"
-		local texdps_grey = "|TInterface\\AddOns\\DungeonHelper\\media\\dps_grey.tga:18:18:0:0|t"
+		local textank = "|TInterface\\LFGFrame\\LFGRole:16:16:0:0:64:16:32:48:0:16|t"
+		local texheal = "|TInterface\\LFGFrame\\LFGRole:16:16:0:0:64:16:48:64:0:16|t"
+		local texdps = "|TInterface\\LFGFrame\\LFGRole:16:16:0:0:64:16:16:32:0:16|t"
+		local texdps_grey = "|TInterface\\AddOns\\DungeonHelper\\media\\dps_grey.tga:16:16:0:0|t"
 		
 		if tankNeeds > 0 then
 			tankColor = red
-			textank = "|TInterface\\AddOns\\DungeonHelper\\media\\tank_grey.tga:18:18:0:0|t"
+			textank = "|TInterface\\AddOns\\DungeonHelper\\media\\tank_grey.tga:16:16:0:0|t"
 		end
 		if healerNeeds > 0 then
 			healerColor = red
-			texheal = "|TInterface\\AddOns\\DungeonHelper\\media\\heal_grey.tga:18:18:0:0|t"
+			texheal = "|TInterface\\AddOns\\DungeonHelper\\media\\heal_grey.tga:16:16:0:0|t"
 		end
 		if dpsNeeds > 0 then
 			damageColor = red
@@ -247,6 +247,7 @@ function frame:UpdateText()
 		elseif mode == "queued" then
 			dataobj.text = L["Assembling group..."]
 		else -- not using the LFD at all
+			--[[
 			if GetLFGRoleShortageRewards then
 				local text = L["Find Group"]
 				local dungeonID = LFDQueueFrame.type
@@ -270,8 +271,9 @@ function frame:UpdateText()
 				end
 				dataobj.text = text
 			else
+			--]]
 				dataobj.text = L["Find Group"]
-			end
+			--end
 		end
 	end
 end
@@ -309,7 +311,8 @@ dpsWaitFS:SetPoint("CENTER",titleWaitFS,0,-20)
 local OrgLFDSearchStatus_Update = LFDSearchStatus_Update
 local function MyLFDSearchStatus_Update(...)
 	OrgLFDSearchStatus_Update(...)
-	LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
+	--LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
+	LFDSearchStatus:SetHeight(210)
 	
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	_G.LFDSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
@@ -325,7 +328,8 @@ LFDSearchStatus_Update = MyLFDSearchStatus_Update
 LFDSearchStatus._Show = LFDSearchStatus.Show
 local function LFDSearchStatus_Show(...)
 	LFDSearchStatus:_Show(...)
-	LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
+	--LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
+	LFDSearchStatus:SetHeight(210)
 end
 LFDSearchStatus.Show = LFDSearchStatus_Show
 
