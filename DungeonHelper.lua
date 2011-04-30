@@ -199,7 +199,7 @@ local function GetTimeString(seconds)
 	end
 end
 
-local function GetTimeStringLong(seconds)
+function GetTimeStringLong(seconds)
 	local time = "";
 	local tempTime;
 	if not seconds or seconds < 1 or seconds >= 36000 then
@@ -209,19 +209,33 @@ local function GetTimeStringLong(seconds)
 	if seconds >= 3600 then
 		if time ~= "" then time = time..TIME_UNIT_DELIMITER end
 		tempTime = floor(seconds / 3600);
-		time = tempTime.." Hours"
+		if tempTime > 1 then
+			time = tempTime.." "..L["Hours"]
+		else
+			time = tempTime.." "..L["Hour"]
+		end
 		seconds = mod(seconds, 3600);
 	end
 	if seconds >= 60 then
 		if time ~= "" then time = time..TIME_UNIT_DELIMITER end
 		tempTime = floor(seconds / 60);
-		time = time..tempTime.." Minutes"
+		if tempTime > 1 then
+			time = time..tempTime.." "..L["Minutes"]
+		else
+			time = time..tempTime.." "..L["Minute"]
+		end
 		seconds = mod(seconds, 60);
 	end
 	if seconds > 0 then
 		if time ~= "" then time = time..TIME_UNIT_DELIMITER end
-		seconds = format("%d", seconds)
-		time = time..seconds.." Seconds"
+		if seconds > 1 then
+			seconds = format("%d", seconds)
+			time = time..seconds.." "..L["Seconds"]
+		else
+			seconds = format("%d", seconds)
+			time = time..seconds.." "..L["Second"]
+		end
+		
 	end
 	return time;
 end

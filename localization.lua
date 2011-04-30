@@ -5,10 +5,15 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
+	L["Hour"] = true
+	L["Minute"] = true
+	L["Second"] = true
+	L["Hours"] = true
+	L["Minutes"] = true
+	L["Seconds"] = true
 	L["Icon Size"] = true
 	L["Zandalari"] = true
 	L["Cata"] = true
-	
 	L["Show Timer Bar"] = true
 	L["Remaining"] = true
 	L["General"] = true
