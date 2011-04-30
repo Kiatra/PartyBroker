@@ -284,7 +284,7 @@ function frame:UpdateText()
 					dpsText = dpsText..texDpsGrey
 				end
 			end
-			text = tmpTank..tmpHeal..dpsText
+			text = prefix..tmpTank..tmpHeal..dpsText
 		elseif db.display == "short" then
 			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["T"], healerColor,L["H"], damageColor,L["D"], dpshas)
 		else
@@ -293,7 +293,6 @@ function frame:UpdateText()
 		
 		if db.showTime then
 			formattedText = text.." "..L["Time"]..": "..GetTimeString(GetTime() - queuedTime).."/"..GetTimeString(myWait).." "
-			formattedText = text
 		else
 			formattedText = text
 		end
