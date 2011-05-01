@@ -119,7 +119,7 @@ local aceoptions = {
 					values = AceGUIWidgetLSMlists.sound,
 					order = 5,
 					name = L["Select Sound"],
-					desc = L["Warnig: Some of the sounds may depend on other addons."],
+					desc = L["Warning: Some of the sounds may depend on other addons."],
 					get = function() 
 						return db.porposalSoundName
 					end,
@@ -139,7 +139,7 @@ local aceoptions = {
 				label = {
 					order = 0,
 					type = "description",
-					name = L["Watch for Call To Arms (Bonus reqwards) availability."],
+					name = L["Watch for Call To Arms (Bonus rewards) availability."],
 				},
 				bonusChatAlert = {
 					type = 'toggle',
@@ -171,7 +171,7 @@ local aceoptions = {
 					values = AceGUIWidgetLSMlists.sound,
 					order = 3,
 					name = L["Select Sound"],
-					desc = L["Warnig: Some of the sounds may depend on other addons."],
+					desc = L["Warning: Some of the sounds may depend on other addons."],
 					get = function() 
 						return db.bonusSoundName
 					end,

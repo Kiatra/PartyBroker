@@ -9,11 +9,11 @@ if L then
 	L["Play the selected Sound when the group is ready."] = true
 	L["Select Sound"] = true
 	L["Play Bonus Sound"] = true
-	L["Warnig: Some of the sounds may depend on other addons."] = true
+	L["Warning: Some of the sounds may depend on other addons."] = true
 	L["Dungeon Helper: Bonus available!"] = true
 	L["Watch"] = true
 	L["Report To Chat"] = true
-	L["Watch for Call To Arms (Bonus reqwards) availability."] = true
+	L["Watch for Call To Arms (Bonus rewards) availability."] = true
 	L["Call To Arms"] = true
 	
 	L["Hour"] = true
