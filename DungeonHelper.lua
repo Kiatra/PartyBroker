@@ -651,7 +651,6 @@ local function Teleport()
 	end
 end
 
-local test =1
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
 		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")	
