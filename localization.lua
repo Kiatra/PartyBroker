@@ -5,6 +5,9 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
+	L["Show Time"] = true 
+	L["You need to have a Data Broker Display to see this Plugin."] = true  
+	
 	L["Play Invitation Sound"] = true
 	L["Play the selected Sound when the group is ready."] = true
 	L["Select Sound"] = true
@@ -39,7 +42,6 @@ if L then
 	L["Hide Minimap Button"] = true
 
 	L["Show Instance Name"] = true
-	L["Show Wait Time"] = true
 	L["Short Text"] = true
 	L["Teleport In/Out"] = true
 	L["T"] = true

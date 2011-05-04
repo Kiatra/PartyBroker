@@ -12,7 +12,6 @@ local porposalBar, dataobj
 local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
-local startTime = GetTime()
 
 local _G, select, string, mod, floor, format, tostring, type = _G, select, string, mod, floor, format, tostring, type
 local MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance = MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance
@@ -280,91 +279,6 @@ local aceoptions = {
 						},
 					},
 				},
-				--[[
-				dungeons= {
-					inline = true,
-					name = L["Dungeons to Watch"],
-					type="group",
-					order = 3,
-					args={
-						watchCata = {
-							type = 'toggle',
-							order = 2,
-							name = function() local name, _, _, _, _, _, _, _ = GetLFGDungeonInfo(301); return name end,
-							desc = function() local name, _, _, _, _, _, _, _ = GetLFGDungeonInfo(301); return name end,
-							get = function(info, value)
-								return db.watchCata
-							end,
-							set = function(info, value)
-								db.watchCata = value
-								registerBonusTimer()
-								RequestLFDPlayerLockInfo()
-							end,
-						},
-						watchZandalari = {
-							type = 'toggle',
-							order = 2,
-							name = function() local name, _, _, _, _, _, _, _ = GetLFGDungeonInfo(341); return name end,
-							desc = function() local name, _, _, _, _, _, _, _ = GetLFGDungeonInfo(341); return name end,
-							get = function(info, value)
-								return db.watchZandalari
-							end,
-							set = function(info, value)
-								db.watchZandalari = value
-								registerBonusTimer()
-								RequestLFDPlayerLockInfo()
-							end,
-						},
-					},
-				},
-				roles = {
-					inline = true,
-					name = L["Roles to Watch"],
-					type="group",
-					order = 3,
-					args={
-						tank = {
-							type = 'toggle',
-							order = 1,
-							name = L["Tank"],
-							desc = L["Tank"],
-							get = function(info, value)
-								return db.watchTank
-							end,
-							set = function(info, value)
-								db.watchTank = value
-								RequestLFDPlayerLockInfo()
-							end,
-						},
-						healer = {
-							type = 'toggle',
-							order = 2,
-							name = L["Healer"],
-							desc = L["Healer"],
-							get = function(info, value)
-								return db.watchHeal
-							end,
-							set = function(info, value)
-								db.watchHeal = value
-								RequestLFDPlayerLockInfo()
-							end,
-						},
-						dps = {
-							type = 'toggle',
-							order = 3,
-							name = L["DPS"],
-							desc = L["DPS"],
-							get = function(info, value)
-								return db.watchDPS
-							end,
-							set = function(info, value)
-								db.watchDPS = value
-								RequestLFDPlayerLockInfo()
-							end,
-						},
-					},
-				},
-				--]]
 			},
 		},
 		databroker = {
@@ -373,6 +287,11 @@ local aceoptions = {
 			type="group",
 			order = 4,
 			args={
+				label = {
+					order = 0,
+					type = "description",
+					name = L["You need to have a Data Broker Display to see this Plugin."],
+				},
 				display = {
 					type = 'select',
 					order = 1,
@@ -403,8 +322,8 @@ local aceoptions = {
 				showTime = {
 					type = 'toggle',
 					order = 3,
-					name = L["Show Wait Time"],
-					desc = L["Show Wait Time"],
+					name = L["Show Time"],
+					desc = L["Show Time"],
 					get = function(info, value)
 						return db.showTime
 					end,
@@ -523,43 +442,49 @@ local function bonusAlert()
 end
 
 local function updateCallToArms()
+	local bonusChanged  = false
 	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(301, 1)
 	if forTank ~= needCataTank then 
 		needCataTank = forTank
-		Debug("cata TankChanged")
-		if forTank and db.watchCataTank then bonusAlert() end
+		Debug("cata TankChanged",forTank)
+		if forTank and db.watchCataTank then bonusChanged = true end
 	end
 	if forHealer ~= needCataHeal then 
 		needCataHeal = forHealer
-		Debug("cata HealChanged")
-		if forHeal and db.watchCataHeal then bonusAlert() end
+		Debug("cata HealChanged",forHealer)
+		if forHealer and db.watchCataHeal then bonusChanged = true end
 	end
 	if forDamage ~= needCataDps then 
 		needCataDps = forDamage
 		Debug("cata DPSChanged")
-		if forDPS and db.watchCataDPS then bonusAlert() end
+		if forDPS and db.watchCataDPS then bonusChanged = true end
 	end
 	
 	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(341, 1)
 	if forTank ~= needZalandariTank then 
 		needZalandariTank = forTank
-		Debug("za TankChanged")
-		if forTank and db.watchZandalariTank then bonusAlert() end
+		Debug("za TankChanged",forTank)
+		if forTank and db.watchZandalariTank then bonusChanged = true end
 	end
 	if forHealer ~= needZalandariHeal then 
 		needZalandariHeal = forHealer
-		Debug("za HealChanged")
-		if forHealer and db.watchZandalariHeal then bonusAlert() end
+		Debug("za HealChanged",forHealer)
+		if forHealer and db.watchZandalariHeal then bonusChanged = true end
 	end
 	if forDamage ~= needZalandariDPS then 
 		needZalandariDPS = forDamage
 		Debug("za HealChanged")
-		if forDamage and db.watchZandalariDPS then bonusAlert() end
+		if forDamage and db.watchZandalariDPS then bonusChanged = true end
+	end
+	if bonusChanged then
+		Debug("bonusChanged")
+		bonusAlert()
 	end
 end
 
 function frame:UpdateText()
 	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
+	formattedText = ""
 	if (hasData) then
 		frame:SetScript("OnUpdate", OnUpdate)
 		local dpshas = 3 - dpsNeeds 
@@ -618,7 +543,11 @@ function frame:UpdateText()
 		local mode, submode = GetLFGMode();
 		if mode == "lfgparty" then
 			--frame:SetScript("OnUpdate", OnUpdate)
-			formattedText = L["In Party"]..": "..GetTimeString(GetTime() - startTime)
+			if db.showTime then
+				formattedText = L["In Party"]..": "..GetTimeString(GetTime() - db.startTime)
+			else
+				formattedText = L["In Party"]
+			end
 		elseif mode == "queued" then
 			formattedText = _G.ASSEMBLING_GROUP
 		else -- not using the LFD at all
@@ -627,15 +556,16 @@ function frame:UpdateText()
 			if needCataHeal and db.watchCataHeal then roles = roles.." "..texHeal end
 			if needCataDps and db.watchCataDPS then roles = roles.." "..texDps end
 			if roles ~= "" then 
-				text = L["Cata"]..":"..roles.." " 
+				formattedText = L["Cata"]..":"..roles.." " 
 			end
 			roles = ""
 			if needZalandariTank and db.watchZandalariTank then roles = roles.." "..texTank end
 			if needZalandariHeal and db.watchZandalariHeal then roles = roles.." "..texHeal end
 			if needZalandariDps and db.watchZandalariDPS  then roles = roles.." "..texDps end
 			if roles ~= "" then
-				formattedText = text..L["Zandalari"]..":"..roles
-			else
+				formattedText = formattedText..L["Zandalari"]..":"..roles
+			end
+			if formattedText == "" then 
 				formattedText = L["Find Group"]
 			end
 		end
@@ -778,7 +708,7 @@ local function OnEvent(self, event, ...)
 		if porposalBar then porposalBar:Stop() end
 		if not dungeonInProgress then
 			--timer = 0
-			startTime = GetTime()
+			db.startTime = GetTime()
 			dungeonInProgress = true
 			firstEnterDungeon = true
 		end
@@ -786,7 +716,7 @@ local function OnEvent(self, event, ...)
 	elseif event == "LFG_COMPLETION_REWARD" then
 		-- dungeon done (random only)
 		--frame:SetScript("OnUpdate", nil)
-		local dur = GetTime() - startTime
+		local dur = GetTime() - db.startTime
 		if db.reportTime and dur > 0 then
 			_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
 		end
@@ -830,7 +760,7 @@ function DungeonHelper:OnInitialize()
 			playAlarm=oldDB.playAlarm, showTimerBar=oldDB.showTimerBar, iconSize=12,
 			watchCata=true, watchCataTank=true, watchCataHeal=true, watchCataDPS=true,
 			watchZandalari=true,watchZandalariTank=true,watchZandalariHeal=true,watchZandalariDPS=true,
-			bonusSoundAlert=true,bonusChatAlert=true,porposalSoundName="Red Alert"
+			bonusSoundAlert=false,bonusChatAlert=true,porposalSoundName="Red Alert",startTime = GetTime()
 		}
 	}
 	
