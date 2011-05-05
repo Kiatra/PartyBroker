@@ -590,10 +590,15 @@ local function Onclick(self, button, ...)
 		if _G.IsControlKeyDown() then
 			Teleport()
 		else
-			_G.LFDMicroButton:GetScript("OnClick")(self, button, ...)
+			_G.LFDMicroButton:GetScript("OnClick")(_G.LFDMicroButton, button, ...)
 		end
 	end
 end
+--local testTable = {clickme=Onclick}
+local testTable = {}
+testTable["clickme"] = Onclick
+
+testTable:clickme("button4")
 
 local titleWaitFS = LFDSearchStatus:CreateFontString(nil, nil, "GameFontNormal")
 --titleWaitFS:SetPoint("BOTTOMLEFT",LFDSearchStatus,"TOPLEFT",120,-135)
