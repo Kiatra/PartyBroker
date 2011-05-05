@@ -457,7 +457,7 @@ local function updateCallToArms()
 	if forDamage ~= needCataDps then 
 		needCataDps = forDamage
 		Debug("cata DPSChanged")
-		if forDPS and db.watchCataDPS then bonusChanged = true end
+		if forDamage and db.watchCataDPS then bonusChanged = true end
 	end
 	
 	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(341, 1)
@@ -471,8 +471,8 @@ local function updateCallToArms()
 		Debug("za HealChanged",forHealer)
 		if forHealer and db.watchZandalariHeal then bonusChanged = true end
 	end
-	if forDamage ~= needZalandariDPS then 
-		needZalandariDPS = forDamage
+	if forDamage ~= needZalandariDps then 
+		needZalandariDps = forDamage
 		Debug("za HealChanged")
 		if forDamage and db.watchZandalariDPS then bonusChanged = true end
 	end
