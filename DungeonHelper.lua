@@ -44,7 +44,9 @@ _G.StaticPopupDialogs["DUNGEONHELPER_LEAVEDIALOG"] = {
 	OnAccept = function()
 		Debug("leave party")
 		_G.SendChatMessage(db.endMessage,"party",nil,nil)
-		_G.LeaveParty()
+		acetimer:ScheduleTimer(function()
+			_G.LeaveParty()
+		end, 1)	
 	end,
 	timeout = 0,
 	whileDead = true,
@@ -145,7 +147,7 @@ local aceoptions = {
 					type = 'input',
 					order = 6,
 					name = L["Start Message"],
-					desc = L["Sends a message to the party chat at the beginning of the dungeon."]..L["Clear the box to disable this."],
+					desc = L["Sends a message to the party chat at the beginning of the dungeon."].." "..L["Clear the box to disable this."],
 					--usage = "<name>",
 					get = function()
 					  return db.startMessage
@@ -158,7 +160,7 @@ local aceoptions = {
 					type = 'input',
 					order = 7,
 					name = L["End Message"],
-					desc = L["Sends a message to the party chat at the end of the dungeon."]..L["Clear the box to disable this."],
+					desc = L["Sends a message to the party chat at the end of the dungeon."].." "..L["Clear the box to disable this."],
 					--usage = "<name>",
 					get = function()
 					  return db.endMessage
