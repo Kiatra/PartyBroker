@@ -5,6 +5,16 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
+	L["End Message"] = true
+	L["Start Message"] = true
+	L["Sends a message to the party chat at the beginning of the dungeon."] = true
+	L["Sends a message to the party chat at the end of the dungeon."] = true
+	L["Clear the box to disable this."] = true
+	L["hi"] = true
+	L["thanks, bb"] = true
+	--L["Delay Invitation Alert"] = true
+	--L["Delays the invitation alert by 5 seconds. This only works with WoW in windowed mode."] = true
+	
 	L["Show Time"] = true 
 	L["You need to have a Data Broker Display to see this Plugin."] = true  
 	
@@ -64,48 +74,72 @@ end
 
 local L = AceLocale:NewLocale("DungeonHelper", "deDE")
 if L then 
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="deDE", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "frFR")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="frFR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "koKR")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="koKR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "zhTW")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="zhTW", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "zhCN")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="zhCN", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "ruRU")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="ruRU", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "esES")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="esES", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
 
 local L = AceLocale:NewLocale("DungeonHelper", "esMX")
 if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["Thanks, bb"] = ""
 	--@localization(locale="esMX", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end

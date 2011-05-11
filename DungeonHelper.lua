@@ -21,7 +21,7 @@ local TIME_UNIT_DELIMITER, RequestLFDPlayerLockInfo, RequestLFDPartyLockInfo, LF
 local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime
 local formattedText = ""
 local texTank, texHeal, texDps, texDpsGrey, texHankGrey, texHealGrey
-local _, bonusTimer, firstEnterDungeon
+local _, bonusTimer, invitationAlertTimer, firstEnterDungeon
 -- save the last status to check for updates
 local needZalandariTank, needZalandariHeal, needZalandariDps
 local needCataTank, needCataHeal, needCataDps
@@ -36,6 +36,20 @@ local function Debug(...)
 	_G.DEFAULT_CHAT_FRAME:AddMessage(s)
 	--@end-debug@
 end
+
+_G.StaticPopupDialogs["DUNGEONHELPER_LEAVEDIALOG"] = {
+	text = _G.PARTY_LEAVE,
+	button1 = _G.YES,
+	button2 = _G.NO,
+	OnAccept = function()
+		Debug("leave party")
+		_G.SendChatMessage(db.endMessage,"party",nil,nil)
+		_G.LeaveParty()
+	end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+}
 
 local version = GetAddOnMetadata("DungeonHelper","X-Curse-Packaged-Version") or ""
 local aceoptions = { 
@@ -127,6 +141,48 @@ local aceoptions = {
 						db.porposalSoundName = value
 					end,
 				},
+				startMessage = {
+					type = 'input',
+					order = 6,
+					name = L["Start Message"],
+					desc = L["Sends a message to the party chat at the beginning of the dungeon."]..L["Clear the box to disable this."],
+					--usage = "<name>",
+					get = function()
+					  return db.startMessage
+					end,
+					set = function(info, name)
+					 db.startMessage = name
+					end,
+				},
+				endMessage = {
+					type = 'input',
+					order = 7,
+					name = L["End Message"],
+					desc = L["Sends a message to the party chat at the end of the dungeon."]..L["Clear the box to disable this."],
+					--usage = "<name>",
+					get = function()
+					  return db.endMessage
+					end,
+					set = function(info, name)
+					 db.endMessage = name
+					end,
+				},
+				--/dump GetCVar("gxWindow")
+				--[[
+				delayInvitationAlert = {
+					type = 'toggle',
+					order = 8,
+					name = L["Delay Invitation Alert"],
+					desc = L["Delays the invitation alert by 5 seconds. This only works with WoW in windowed mode."],
+					disabled = function() return GetCVar("gxWindow") == "0" end,
+					get = function(info, value)
+						return db.delayInvitationAlert
+					end,
+					set = function(info, value)
+						db.delayInvitationAlert = value
+					end,
+				},
+				--]]
 			},
 		},
 		bonusWatch = {
@@ -433,11 +489,14 @@ local function OnUpdate(self, elapsed)
 end
 
 local function bonusAlert()
-	if db.bonusSoundAlert then
-		_G.PlaySoundFile(db.bonusSoundFile,"Master")
-	end
-	if db.bonusChatAlert then
-		_G.print(L["Dungeon Helper: Bonus available!"])
+	local mode, submode = GetLFGMode()
+	if (mode == "queued" or mode == "listed") and instanceName then
+		if db.bonusSoundAlert then
+			_G.PlaySoundFile(db.bonusSoundFile,"Master")
+		end
+		if db.bonusChatAlert then
+			_G.print(L["Dungeon Helper: Bonus available!"])
+		end
 	end
 end
 
@@ -594,11 +653,6 @@ local function Onclick(self, button, ...)
 		end
 	end
 end
---local testTable = {clickme=Onclick}
-local testTable = {}
-testTable["clickme"] = Onclick
-
-testTable:clickme("button4")
 
 local titleWaitFS = LFDSearchStatus:CreateFontString(nil, nil, "GameFontNormal")
 --titleWaitFS:SetPoint("BOTTOMLEFT",LFDSearchStatus,"TOPLEFT",120,-135)
@@ -642,7 +696,7 @@ end
 --]]
 
 local function OnEnter(anchor)
-	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
+	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
 	local mode, submode = GetLFGMode();
 	
 	if (mode == "queued" or mode == "listed") and instanceName then
@@ -683,19 +737,33 @@ dataobj = ldb:NewDataObject("DungeonHelper", {
 	OnLeave = OnLeave
 })
 
+local function playInvitationAlert()
+	_G.PlaySoundFile(db.porposalSoundFile,"Master")
+end
+
 local function OnEvent(self, event, ...)
 	--Debug("OnEvent", event, ...)
-	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
+	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	if event == "PLAYER_ENTERING_WORLD" then
-		if firstEnterDungeon then
-			Debug("HI")
+		Debug("_G.GetNumPartyMembers()",_G.GetNumPartyMembers())
+		if firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
+			acetimer:ScheduleTimer(function()
+				_G.SendChatMessage(db.startMessage,"party",nil,nil)
+			end, 4)	
 			firstEnterDungeon = false
 		end
 	elseif event == "LFG_PROPOSAL_FAILED" then
+		acetimer:CancelTimer(invitationAlertTimer, true)
 		if porposalBar then porposalBar:Stop() end
 	elseif event == "LFG_PROPOSAL_SHOW" then
 		if db.playAlarm then
-			_G.PlaySoundFile(db.porposalSoundFile,"Master")
+			if _G.GetCVar("gxWindow") == "1" then
+				invitationAlertTimer = acetimer:ScheduleTimer(function()
+					playInvitationAlert()
+				end, 5)	
+			else
+				playInvitationAlert()
+			end
 		end
 		Debug(db.showTimerBar,candy)
 		if db.showTimerBar and candy then
@@ -709,6 +777,8 @@ local function OnEvent(self, event, ...)
 			porposalBar:Start()
 		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
+		Debug("_G.GetNumPartyMembers()",_G.GetNumPartyMembers())
+		acetimer:CancelTimer(invitationAlertTimer, true)
 		-- going in or new player
 		if porposalBar then porposalBar:Stop() end
 		if not dungeonInProgress then
@@ -727,6 +797,20 @@ local function OnEvent(self, event, ...)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false
+		_G.StaticPopup_Show("DUNGEONHELPER_LEAVEDIALOG")
+		--[[
+		if db.endMessage ~= "" then
+			acetimer:ScheduleTimer(function()
+				_G.SendChatMessage(db.endMessage,"party",nil,nil)
+			end, 3)	
+			firstEnterDungeon = false
+		end
+		--]]
+	elseif event == "LFG_PROPOSAL_UPDATE" then
+		local proposalExists, typeID, id, name, texture, role, hasResponded, totalEncounters, completedEncounters, numMembers, isLeader = _G.GetLFGProposal()
+		if hasResponded then
+			acetimer:CancelTimer(invitationAlertTimer, true)
+		end
 	elseif event == "PARTY_MEMBERS_CHANGED" then
 		--leave party
 		if _G.GetNumPartyMembers() < 1 then
@@ -765,7 +849,8 @@ function DungeonHelper:OnInitialize()
 			playAlarm=oldDB.playAlarm, showTimerBar=oldDB.showTimerBar, iconSize=12,
 			watchCata=true, watchCataTank=true, watchCataHeal=true, watchCataDPS=true,
 			watchZandalari=true,watchZandalariTank=true,watchZandalariHeal=true,watchZandalariDPS=true,
-			bonusSoundAlert=false,bonusChatAlert=true,porposalSoundName="Red Alert",startTime = GetTime()
+			bonusSoundAlert=false,bonusChatAlert=true,porposalSoundName="Red Alert",startTime = GetTime(),
+			startMessage=L["hi"],endMessage=L["thanks, bb"]
 		}
 	}
 	
