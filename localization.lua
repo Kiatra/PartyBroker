@@ -12,8 +12,6 @@ if L then
 	L["Clear the box to disable this."] = true
 	L["hi"] = true
 	L["thanks, bb"] = true
-	--L["Delay Invitation Alert"] = true
-	--L["Delays the invitation alert by 5 seconds. This only works with WoW in windowed mode."] = true
 	
 	L["Show Time"] = true 
 	L["You need to have a Data Broker Display to see this Plugin."] = true  

@@ -6,18 +6,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("DungeonHelper")
 local LSM = LibStub("LibSharedMedia-3.0")
 local acetimer = LibStub("AceTimer-3.0")
 local path = "Interface\\AddOns\\DungeonHelper\\media\\"
-local db
-local candy
-local porposalBar, dataobj
+
+local db, candy, endTime, porposalBar, dataobj
 local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
-
-local _G, select, string, mod, floor, format, tostring, type = _G, select, string, mod, floor, format, tostring, type
-local MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance = MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance
-local GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards = GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards
-local TIME_UNIT_DELIMITER, RequestLFDPlayerLockInfo, RequestLFDPartyLockInfo, LFDParentFrame = TIME_UNIT_DELIMITER, RequestLFDPlayerLockInfo, RequestLFDPartyLockInfo, LFDParentFrame
-
 local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime
 local formattedText = ""
 local texTank, texHeal, texDps, texDpsGrey, texHankGrey, texHealGrey
@@ -25,13 +18,18 @@ local _, bonusTimer, invitationAlertTimer, firstEnterDungeon
 -- save the last status to check for updates
 local needZalandariTank, needZalandariHeal, needZalandariDps
 local needCataTank, needCataHeal, needCataDps
+-- local copy of globals
+local _G, string, mod, floor, format, type = _G, string, mod, floor, format, type
+local MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance = MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance
+local GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards = GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards
+local RequestLFDPlayerLockInfo, LFDParentFrame = RequestLFDPlayerLockInfo, LFDParentFrame
 
 local function Debug(...)
 	 --@debug@
 	local s = "Dungeon Helper Debug:"
-	for i=1,select("#", ...) do
-		local x = select(i, ...)
-		s = _G.strjoin(" ",s,tostring(x))
+	for i=1,_G.select("#", ...) do
+		local x = _G.select(i, ...)
+		s = _G.strjoin(" ",s,_G.tostring(x))
 	end
 	_G.DEFAULT_CHAT_FRAME:AddMessage(s)
 	--@end-debug@
@@ -420,8 +418,6 @@ local aceoptions = {
 }
 
 local function barstopped( callback, bar )
-  --print( bar.candybarLabel:GetText(), "stopped")
-  Debug("stopped")
   porposalBar = nil
 end
 
@@ -446,7 +442,7 @@ local function GetTimeStringLong(seconds)
 	end
 	seconds = floor(seconds);
 	if seconds >= 3600 then
-		if time ~= "" then time = time..TIME_UNIT_DELIMITER end
+		if time ~= "" then time = time.._G.TIME_UNIT_DELIMITER end
 		tempTime = floor(seconds / 3600);
 		if tempTime > 1 then
 			time = tempTime.." "..L["Hours"]
@@ -456,7 +452,7 @@ local function GetTimeStringLong(seconds)
 		seconds = mod(seconds, 3600);
 	end
 	if seconds >= 60 then
-		if time ~= "" then time = time..TIME_UNIT_DELIMITER end
+		if time ~= "" then time = time.._G.TIME_UNIT_DELIMITER end
 		tempTime = floor(seconds / 60);
 		if tempTime > 1 then
 			time = time..tempTime.." "..L["Minutes"]
@@ -466,7 +462,7 @@ local function GetTimeStringLong(seconds)
 		seconds = mod(seconds, 60);
 	end
 	if seconds > 0 then
-		if time ~= "" then time = time..TIME_UNIT_DELIMITER end
+		if time ~= "" then time = time.._G.TIME_UNIT_DELIMITER end
 		if seconds > 1 then
 			seconds = format("%d", seconds)
 			time = time..seconds.." "..L["Seconds"]
@@ -481,7 +477,6 @@ end
 
 local function OnUpdate(self, elapsed)
 	counter = counter + elapsed
-	--timer = timer + elapsed
 	if counter >= delay then
 		counter = 0
 		if db.showTime then 
@@ -605,10 +600,15 @@ function frame:UpdateText()
 		if mode == "lfgparty" then
 			--frame:SetScript("OnUpdate", OnUpdate)
 			if db.showTime then
-				formattedText = L["In Party"]..": "..GetTimeString(GetTime() - db.startTime)
+				if db.startTime == 0 then
+					formattedText = L["In Party"]..": "..GetTimeString(GetTime() - endTime)
+				else
+					formattedText = L["In Party"]..": "..GetTimeString(GetTime() - db.startTime)
+				end
 			else
 				formattedText = L["In Party"]
 			end
+			formattedText = db.showTime and L["In Party"]..": "..GetTimeString(GetTime() - db.startTime) or L["In Party"]
 		elseif mode == "queued" then
 			formattedText = _G.ASSEMBLING_GROUP
 		else -- not using the LFD at all
@@ -632,6 +632,7 @@ function frame:UpdateText()
 		end
 	end
 	dataobj.text = formattedText
+	return (true or false) and (false or true)
 end
 
 local function Teleport()
@@ -747,12 +748,19 @@ local function OnEvent(self, event, ...)
 	--Debug("OnEvent", event, ...)
 	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	if event == "PLAYER_ENTERING_WORLD" then
-		Debug("_G.GetNumPartyMembers()",_G.GetNumPartyMembers())
 		if firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
 			acetimer:ScheduleTimer(function()
 				_G.SendChatMessage(db.startMessage,"party",nil,nil)
 			end, 4)	
 			firstEnterDungeon = false
+		end
+		if IsInInstance() and _G.HasLFGRestrictions() and not dungeonInProgress then --dungeon in progress but we don't now about it (dc, addon just enabled)
+			Debug("PLAYER_ENTERING_WORLD db.startTime",db.startTime)
+			if db.startTime == 0 then
+				db.startTime = GetTime()
+			end
+			dungeonInProgress = true
+			frame:SetScript("OnUpdate", OnUpdate)
 		end
 	elseif event == "LFG_PROPOSAL_FAILED" then
 		acetimer:CancelTimer(invitationAlertTimer, true)
@@ -767,7 +775,6 @@ local function OnEvent(self, event, ...)
 				playInvitationAlert()
 			end
 		end
-		Debug(db.showTimerBar,candy)
 		if db.showTimerBar and candy then
 			porposalBar = candy:New("Interface\\AddOns\\ChocolateBar\\pics\\DarkBottom", _G.LFDDungeonReadyPopup:GetWidth()-5, 14)
 			porposalBar:SetPoint("CENTER",0,120)
@@ -784,7 +791,6 @@ local function OnEvent(self, event, ...)
 		-- going in or new player
 		if porposalBar then porposalBar:Stop() end
 		if not dungeonInProgress then
-			--timer = 0
 			db.startTime = GetTime()
 			dungeonInProgress = true
 			firstEnterDungeon = true
@@ -799,15 +805,9 @@ local function OnEvent(self, event, ...)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false
+		endTime = GetTime() - db.startTime
+		db.startTime = 0
 		_G.StaticPopup_Show("DUNGEONHELPER_LEAVEDIALOG")
-		--[[
-		if db.endMessage ~= "" then
-			acetimer:ScheduleTimer(function()
-				_G.SendChatMessage(db.endMessage,"party",nil,nil)
-			end, 3)	
-			firstEnterDungeon = false
-		end
-		--]]
 	elseif event == "LFG_PROPOSAL_UPDATE" then
 		local proposalExists, typeID, id, name, texture, role, hasResponded, totalEncounters, completedEncounters, numMembers, isLeader = _G.GetLFGProposal()
 		if hasResponded then
@@ -817,6 +817,8 @@ local function OnEvent(self, event, ...)
 		--leave party
 		if _G.GetNumPartyMembers() < 1 then
 			dungeonInProgress = false
+			endTime = GetTime() - db.startTime
+			db.startTime = 0
 		end
 	elseif event == "LFG_UPDATE_RANDOM_INFO" then
 		updateCallToArms()
@@ -830,18 +832,14 @@ end
 local function registerBonusTimer()
 	if db.watchCata or db.watchZalandari then
 		bonusTimer = acetimer:ScheduleRepeatingTimer(function()
-			if not IsInInstance() then
-				if not LFDParentFrame:IsShown() then
-					RequestLFDPlayerLockInfo()
-					--RequestLFDPartyLockInfo()
-				end
+			if not IsInInstance() and not LFDParentFrame:IsShown() then
+				RequestLFDPlayerLockInfo()
 			end
 		end, 10)
 	else
 		acetimer:CancelTimer(bonusTimer,true)
 	end
 end
-
 
 function DungeonHelper:OnInitialize()
 	local oldDB = _G.DungeonHelperDB or {display="icons",showTime=true,hideMinimap=false,reportTime=true,playAlarm=true,showTimerBar=true,iconSize=12}
@@ -851,19 +849,25 @@ function DungeonHelper:OnInitialize()
 			playAlarm=oldDB.playAlarm, showTimerBar=oldDB.showTimerBar, iconSize=12,
 			watchCata=true, watchCataTank=true, watchCataHeal=true, watchCataDPS=true,
 			watchZandalari=true,watchZandalariTank=true,watchZandalariHeal=true,watchZandalariDPS=true,
-			bonusSoundAlert=false,bonusChatAlert=true,porposalSoundName="Red Alert",startTime = GetTime(),
+			bonusSoundAlert=false,bonusChatAlert=true,porposalSoundName="Red Alert",bonusSoundName="Blizzard: Alarm Clock 3",startTime = GetTime(),
 			startMessage=L["hi"],endMessage=L["thanks, bb"]
 		}
 	}
-	
+
 	self.db = LibStub("AceDB-3.0"):New("DungeonHelperDB", defaults, "Default")
 	db = self.db.profile
 	
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("DungeonHelper", aceoptions)
 	LibStub("AceConfigDialog-3.0"):AddToBlizOptions("DungeonHelper", "Dungeon Helper")
+	aceoptions.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+	
+	self.db.RegisterCallback(self, "OnProfileChanged", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
+	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	
 	LSM:Register("sound", "Red Alert","Interface\\AddOns\\DungeonHelper\\media\\alert.mp3")
 	LSM:Register("sound", "Blizzard: Alarm Clock 3",  "Sound\\Interface\\AlarmClockWarning3.wav")
+	Debug(LSM:Fetch("sound", "Blizzard: Alarm Clock 3"))
 	db.bonusSoundFile = LSM:Fetch("sound", db.bonusSoundName) or LSM:Fetch("sound", "Blizzard: Alarm Clock 3")
 	db.porposalSoundFile = LSM:Fetch("sound", db.porposalSoundName) or LSM:Fetch("sound", "Red Alert")
 	
@@ -882,6 +886,18 @@ end
 function DungeonHelper:OnEnable()
 	candy = LibStub("LibCandyBar-3.0")
 	candy:RegisterCallback("LibCandyBar_Stop", barstopped)
+end
+
+function DungeonHelper:OnProfileChanged(event, database, newProfileKey)
+	Debug("OnProfileChanged", event, database, newProfileKey)
+	local oldDB = db
+	db = database.profile
+	if IsInInstance() and _G.HasLFGRestrictions() then --dungeon in progress
+		db.startTime = oldDB.startTime
+	else
+		db.startTime = 0
+	end
+	frame:UpdateText()
 end
 
 frame:SetScript("OnEvent", OnEvent)
