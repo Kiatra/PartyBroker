@@ -1,4 +1,6 @@
 -- DungeonHelper by yess, starfire@fantasymail.de
+if UnitLevel("player") < 15 then return end
+
 local LibStub = LibStub
 local DungeonHelper = LibStub("AceAddon-3.0"):NewAddon("DungeonHelper", "AceConsole-3.0", "AceEvent-3.0")
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
@@ -7,7 +9,8 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local acetimer = LibStub("AceTimer-3.0")
 local path = "Interface\\AddOns\\DungeonHelper\\media\\"
 
-local db, candy, endTime, porposalBar, dataobj
+local db, candy, porposalBar, dataobj
+local endTime = 0
 local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
@@ -59,13 +62,6 @@ local aceoptions = {
 	desc = "Dungeon Helper",
 	childGroups = "tab",
     args = {
-		--[[
-		label = {
-			order = 0,
-			type = "description",
-			name = "Version",
-		},
-		--]]
 		general = {
 			name = L["General"],
 			type="group",
@@ -167,22 +163,18 @@ local aceoptions = {
 					 db.endMessage = name
 					end,
 				},
-				--/dump GetCVar("gxWindow")
-				--[[
-				delayInvitationAlert = {
+				leaveDialoge = {
 					type = 'toggle',
-					order = 8,
-					name = L["Delay Invitation Alert"],
-					desc = L["Delays the invitation alert by 5 seconds. This only works with WoW in windowed mode."],
-					disabled = function() return GetCVar("gxWindow") == "0" end,
+					order = 4,
+					name = L["Leave Party Dialog"],
+					desc = L["Show a leave party dialog at the end of a random dungeon."],
 					get = function(info, value)
-						return db.delayInvitationAlert
+						return db.leaveDialoge
 					end,
 					set = function(info, value)
-						db.delayInvitationAlert = value
+						db.leaveDialoge = value
 					end,
 				},
-				--]]
 			},
 		},
 		bonusWatch = {
@@ -190,6 +182,7 @@ local aceoptions = {
 			name = L["Call To Arms"],
 			type="group",
 			order = 3,
+			disabled = function() return UnitLevel("player") < 85 end,
 			args={
 				label = {
 					order = 0,
@@ -486,8 +479,7 @@ local function OnUpdate(self, elapsed)
 end
 
 local function bonusAlert()
-	local mode, submode = GetLFGMode()
-	if (mode == "queued" or mode == "listed") and instanceName then
+	if not _G.HasLFGRestrictions() then
 		if db.bonusSoundAlert then
 			_G.PlaySoundFile(db.bonusSoundFile,"Master")
 		end
@@ -601,14 +593,13 @@ function frame:UpdateText()
 			--frame:SetScript("OnUpdate", OnUpdate)
 			if db.showTime then
 				if db.startTime == 0 then
-					formattedText = L["In Party"]..": "..GetTimeString(GetTime() - endTime)
+					formattedText = L["In Party"]..": "..GetTimeString(endTime)
 				else
 					formattedText = L["In Party"]..": "..GetTimeString(GetTime() - db.startTime)
 				end
 			else
 				formattedText = L["In Party"]
 			end
-			formattedText = db.showTime and L["In Party"]..": "..GetTimeString(GetTime() - db.startTime) or L["In Party"]
 		elseif mode == "queued" then
 			formattedText = _G.ASSEMBLING_GROUP
 		else -- not using the LFD at all
@@ -754,12 +745,13 @@ local function OnEvent(self, event, ...)
 			end, 4)	
 			firstEnterDungeon = false
 		end
-		if IsInInstance() and _G.HasLFGRestrictions() and not dungeonInProgress then --dungeon in progress but we don't now about it (dc, addon just enabled)
+		if IsInInstance() and _G.HasLFGRestrictions() and not dungeonInProgress then --dungeon in progress but we don't now about it (dc, reload ui)
 			Debug("PLAYER_ENTERING_WORLD db.startTime",db.startTime)
 			if db.startTime == 0 then
 				db.startTime = GetTime()
 			end
 			dungeonInProgress = true
+			endTime = 0
 			frame:SetScript("OnUpdate", OnUpdate)
 		end
 	elseif event == "LFG_PROPOSAL_FAILED" then
@@ -786,7 +778,6 @@ local function OnEvent(self, event, ...)
 			porposalBar:Start()
 		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
-		Debug("_G.GetNumPartyMembers()",_G.GetNumPartyMembers())
 		acetimer:CancelTimer(invitationAlertTimer, true)
 		-- going in or new player
 		if porposalBar then porposalBar:Stop() end
@@ -794,20 +785,23 @@ local function OnEvent(self, event, ...)
 			db.startTime = GetTime()
 			dungeonInProgress = true
 			firstEnterDungeon = true
+			endTime = 0
 		end
 		frame:SetScript("OnUpdate", OnUpdate)
+		Debug("NumPartyMembers=",_G.GetNumPartyMembers(),"starttime=",db.startTime)
 	elseif event == "LFG_COMPLETION_REWARD" then
 		-- dungeon done (random only)
 		--frame:SetScript("OnUpdate", nil)
 		local dur = GetTime() - db.startTime
-		if db.reportTime and dur > 0 then
+		Debug("starttime=",db.startTime,"dur=",dur)
+		if db.reportTime and GetTimeStringLong(dur) ~= "-" then
 			_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false
 		endTime = GetTime() - db.startTime
 		db.startTime = 0
-		_G.StaticPopup_Show("DUNGEONHELPER_LEAVEDIALOG")
+		if db.leaveDialoge then _G.StaticPopup_Show("DUNGEONHELPER_LEAVEDIALOG") end
 	elseif event == "LFG_PROPOSAL_UPDATE" then
 		local proposalExists, typeID, id, name, texture, role, hasResponded, totalEncounters, completedEncounters, numMembers, isLeader = _G.GetLFGProposal()
 		if hasResponded then
@@ -850,7 +844,7 @@ function DungeonHelper:OnInitialize()
 			watchCata=true, watchCataTank=true, watchCataHeal=true, watchCataDPS=true,
 			watchZandalari=true,watchZandalariTank=true,watchZandalariHeal=true,watchZandalariDPS=true,
 			bonusSoundAlert=false,bonusChatAlert=true,porposalSoundName="Red Alert",bonusSoundName="Blizzard: Alarm Clock 3",startTime = GetTime(),
-			startMessage=L["hi"],endMessage=L["thanks, bb"]
+			startMessage=L["hi"],endMessage=L["thanks, bb"],leaveDialog=true
 		}
 	}
 
@@ -866,7 +860,7 @@ function DungeonHelper:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	
 	LSM:Register("sound", "Red Alert","Interface\\AddOns\\DungeonHelper\\media\\alert.mp3")
-	LSM:Register("sound", "Blizzard: Alarm Clock 3",  "Sound\\Interface\\AlarmClockWarning3.wav")
+	LSM:Register("sound", "Blizzard: Alarm Clock 3",  "Sound\\Interface\\AlarmClockWarning3.ogg")
 	Debug(LSM:Fetch("sound", "Blizzard: Alarm Clock 3"))
 	db.bonusSoundFile = LSM:Fetch("sound", db.bonusSoundName) or LSM:Fetch("sound", "Blizzard: Alarm Clock 3")
 	db.porposalSoundFile = LSM:Fetch("sound", db.porposalSoundName) or LSM:Fetch("sound", "Red Alert")
