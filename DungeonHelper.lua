@@ -1,6 +1,4 @@
 -- DungeonHelper by yess, starfire@fantasymail.de
-if UnitLevel("player") < 15 then return end
-
 local LibStub = LibStub
 local DungeonHelper = LibStub("AceAddon-3.0"):NewAddon("DungeonHelper", "AceConsole-3.0", "AceEvent-3.0")
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1",true)
@@ -182,7 +180,7 @@ local aceoptions = {
 			name = L["Call To Arms"],
 			type="group",
 			order = 3,
-			disabled = function() return UnitLevel("player") < 85 end,
+			disabled = function() return _G.UnitLevel("player") < 85 end,
 			args={
 				label = {
 					order = 0,
@@ -739,7 +737,7 @@ local function OnEvent(self, event, ...)
 	--Debug("OnEvent", event, ...)
 	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	if event == "PLAYER_ENTERING_WORLD" then
-		if firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
+		if IsInInstance() and firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
 			acetimer:ScheduleTimer(function()
 				_G.SendChatMessage(db.startMessage,"party",nil,nil)
 			end, 4)	
@@ -781,6 +779,7 @@ local function OnEvent(self, event, ...)
 		acetimer:CancelTimer(invitationAlertTimer, true)
 		-- going in or new player
 		if porposalBar then porposalBar:Stop() end
+		Debug("dungeonInProgress",dungeonInProgress)
 		if not dungeonInProgress then
 			db.startTime = GetTime()
 			dungeonInProgress = true
@@ -794,7 +793,7 @@ local function OnEvent(self, event, ...)
 		--frame:SetScript("OnUpdate", nil)
 		local dur = GetTime() - db.startTime
 		Debug("starttime=",db.startTime,"dur=",dur)
-		if db.reportTime and GetTimeStringLong(dur) ~= "-" then
+		if db.reportTime and db.startTime ~= 0 and GetTimeStringLong(dur) ~= "-" then
 			_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
@@ -808,11 +807,15 @@ local function OnEvent(self, event, ...)
 			acetimer:CancelTimer(invitationAlertTimer, true)
 		end
 	elseif event == "PARTY_MEMBERS_CHANGED" then
-		--leave party
-		if _G.GetNumPartyMembers() < 1 then
-			dungeonInProgress = false
-			endTime = GetTime() - db.startTime
-			db.startTime = 0
+		if not _G.UnitInRaid("player") then 
+			Debug("PARTY_MEMBERS_CHANGED:",_G.GetNumPartyMembers())
+			--leave party
+			if _G.GetNumPartyMembers() < 1 then
+				dungeonInProgress = false
+				endTime = GetTime() - db.startTime
+				Debug("starttime = 0")
+				db.startTime = 0
+			end
 		end
 	elseif event == "LFG_UPDATE_RANDOM_INFO" then
 		updateCallToArms()
