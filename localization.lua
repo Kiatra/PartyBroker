@@ -5,6 +5,8 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
+	L["Twilight"] = true
+	
 	L["Leave Party Dialog"] = true
 	L["Show a leave party dialog at the end of a random dungeon."] = true
 	

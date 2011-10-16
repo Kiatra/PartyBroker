@@ -21,9 +21,31 @@ local needZalandariTank, needZalandariHeal, needZalandariDps
 local needCataTank, needCataHeal, needCataDps
 -- local copy of globals
 local _G, string, mod, floor, format, type = _G, string, mod, floor, format, type
-local MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance = MiniMapLFGFrame, GetLFGQueueStats, LFDSearchStatus, LFDQueueFrame, IsInInstance
+local MiniMapLFGFrame, GetLFGQueueStats, LFDQueueFrame, IsInInstance = MiniMapLFGFrame, GetLFGQueueStats, LFDQueueFrame, IsInInstance
 local GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards = GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards
 local RequestLFDPlayerLockInfo, LFDParentFrame = RequestLFDPlayerLockInfo, LFDParentFrame
+
+local version, _, _, tocversion = _G.GetBuildInfo()
+local MyLFGSearchStatus, MyLFGSearchStatusTitle, MyLFGSearchStatusDamage1, MyLFGSearchStatus_Update
+local valorDungeonID = 341
+local valorDungeonString, MyLFGSearchStatusString
+if version < "4.3" then
+	MyLFGSearchStatus = _G.LFDSearchStatus
+	MyLFGSearchStatusString = "LFDSearchStatus"
+	MyLFGSearchStatusTitle = LFDSearchStatusTitle
+	MyLFGSearchStatusDamage1 = LFDSearchStatusDamage1
+	MyLFGSearchStatus_Update = LFDSearchStatus_Update
+	valorDungeonString = L["Zandalari"]
+else
+	MyLFGSearchStatus = _G.LFGSearchStatus
+	MyLFGSearchStatusString = "LFGSearchStatus"
+	--MyLFGSearchStatus_Show
+	MyLFGSearchStatusTitle = LFGSearchStatusTitle
+	MyLFGSearchStatusDamage1 = LFGSearchStatusDamage1
+	MyLFGSearchStatus_Update = LFGSearchStatus_Update
+	valorDungeonID = 434
+	valorDungeonString = L["Twilight"]
+end
 
 local function Debug(...)
 	 --@debug@
@@ -278,7 +300,7 @@ local aceoptions = {
 				},
 				watchZandalari = {
 					inline = true,
-					name = function() local name, _, _, _, _, _, _, _ = _G.GetLFGDungeonInfo(341); return L["Watch"].." "..name end,
+					name = function() local name, _, _, _, _, _, _, _ = _G.GetLFGDungeonInfo(valorDungeonID); return L["Watch"].." "..name end,
 					type="group",
 					order = 3,
 					args={
@@ -506,7 +528,7 @@ local function updateCallToArms()
 		if forDamage and db.watchCataDPS then bonusChanged = true end
 	end
 	
-	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(341, 1)
+	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(valorDungeonID, 1)
 	if forTank ~= needZalandariTank then 
 		needZalandariTank = forTank
 		Debug("za TankChanged",forTank)
@@ -613,7 +635,7 @@ function frame:UpdateText()
 			if needZalandariHeal and db.watchZandalariHeal then roles = roles.." "..texHeal end
 			if needZalandariDps and db.watchZandalariDPS  then roles = roles.." "..texDps end
 			if roles ~= "" then
-				formattedText = formattedText..L["Zandalari"]..":"..roles
+				formattedText = formattedText..valorDungeonString..":"..roles
 			end
 			if formattedText == "" then 
 				formattedText = L["Find Group"]
@@ -646,22 +668,24 @@ local function Onclick(self, button, ...)
 	end
 end
 
-local titleWaitFS = LFDSearchStatus:CreateFontString(nil, nil, "GameFontNormal")
---titleWaitFS:SetPoint("BOTTOMLEFT",LFDSearchStatus,"TOPLEFT",120,-135)
-titleWaitFS:SetPoint("CENTER",LFDSearchStatusDamage1,0,-55)
+local titleWaitFS = MyLFGSearchStatus:CreateFontString(nil, nil, "GameFontNormal")
+titleWaitFS:SetPoint("BOTTOMLEFT",MyLFGSearchStatus,"TOPLEFT",120,-135)
+--titleWaitFS:SetPoint("CENTER",LFGSearchStatusDamage1,0,-55)
 titleWaitFS:SetText("Wait time as:")
-local dpsWaitFS = LFDSearchStatus:CreateFontString(nil, nil, "GameFontHighlight")
+local dpsWaitFS = MyLFGSearchStatus:CreateFontString(nil, nil, "GameFontHighlight")
+--dpsWaitFS:SetPoint("CENTER",titleWaitFS,0,-20)
 dpsWaitFS:SetPoint("CENTER",titleWaitFS,0,-20)
 
---post hook LFDSearchStatus_Update
-local OrgLFDSearchStatus_Update = _G.LFDSearchStatus_Update
-local function MyLFDSearchStatus_Update(...)
-	OrgLFDSearchStatus_Update(...)
-	--LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
-	LFDSearchStatus:SetHeight(210)
+--post hook MyLFGSearchStatus_Update
+local OrgMyLFGSearchStatus_Update = MyLFGSearchStatus_Update
+local function MyLFGSearchStatus_Update(...)
+	Debug("MyMyLFGSearchStatus_Update")
+	OrgMyLFGSearchStatus_Update(...)
+	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
+	MyLFGSearchStatus:SetHeight(210)
 	
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
-	_G.LFDSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
+	MyLFGSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
 	if hasData then
 		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:48:64:0:16|t %s", healerWait == -1 and TIME_UNKNOWN or SecondsToTime(healerWait, false, false, 1))			
@@ -669,15 +693,16 @@ local function MyLFDSearchStatus_Update(...)
 		dpsWaitFS:SetText(test)
 	end
 end
-_G.LFDSearchStatus_Update = MyLFDSearchStatus_Update
 
-LFDSearchStatus._Show = LFDSearchStatus.Show
-local function LFDSearchStatus_Show(...)
-	LFDSearchStatus:_Show(...)
-	--LFDSearchStatus:SetHeight(LFDSearchStatus:GetHeight()+40)
-	LFDSearchStatus:SetHeight(210)
+_G[MyLFGSearchStatusString.."_Update"] = MyLFGSearchStatus_Update
+
+MyLFGSearchStatus._Show = MyLFGSearchStatus.Show
+local function MyLFGSearchStatus_Show(...)
+	MyLFGSearchStatus:_Show(...)
+	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
+	MyLFGSearchStatus:SetHeight(210)
 end
-LFDSearchStatus.Show = LFDSearchStatus_Show
+MyLFGSearchStatus.Show = MyLFGSearchStatus_Show
 
 --[[
 local LFDQueueFrame_SetType_ORG = LFDQueueFrame_SetType
@@ -692,12 +717,19 @@ local function OnEnter(anchor)
 	local mode, submode = GetLFGMode();
 	
 	if (mode == "queued" or mode == "listed") and instanceName then
-		local LFDSearchStatus = LFDSearchStatus
-		LFDSearchStatus:ClearAllPoints()
-		LFDSearchStatus:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
-		LFDSearchStatus:SetParent(anchor)
-		LFDSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
-		LFDSearchStatus:Show()
+		--local MyLFGSearchStatus = MyLFGSearchStatus
+		local version, _, _, tocversion = _G.GetBuildInfo()
+		local MyLFGSearchStatus
+		if version < "4.3" then
+			MyLFGSearchStatus = _G.LFDSearchStatus
+		else
+			MyLFGSearchStatus = _G.LFGSearchStatus
+		end
+		MyLFGSearchStatus:ClearAllPoints()
+		MyLFGSearchStatus:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
+		MyLFGSearchStatus:SetParent(anchor)
+		MyLFGSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
+		MyLFGSearchStatus:Show()
 	else
 		local tooltip = _G.GameTooltip 
 		tooltip:SetOwner(anchor, "ANCHOR_NONE")
@@ -710,11 +742,11 @@ local function OnEnter(anchor)
 end
 
 local function OnLeave()
-	LFDSearchStatus:ClearAllPoints()
-	LFDSearchStatus:SetPoint("TOPRIGHT", MiniMapLFGFrame, "TOPLEFT")
-	LFDSearchStatus:SetParent(MiniMapLFGFrame)
-	LFDSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
-	LFDSearchStatus:Hide()
+	MyLFGSearchStatus:ClearAllPoints()
+	MyLFGSearchStatus:SetPoint("TOPRIGHT", MiniMapLFGFrame, "TOPLEFT")
+	MyLFGSearchStatus:SetParent(MiniMapLFGFrame)
+	MyLFGSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
+	MyLFGSearchStatus:Hide()
 	_G.GameTooltip:Hide()
 end
 
@@ -876,7 +908,7 @@ function DungeonHelper:OnInitialize()
 	texHealGrey = "|TInterface\\AddOns\\DungeonHelper\\media\\heal_grey.tga:"..db.iconSize..":"..db.iconSize..":0:0|t"
 	
 	_, needCataTank, needCataHeal, needCataDps, _, _, _ = GetLFGRoleShortageRewards(301, 1)
-	_, needZalandariTank, needZalandariHeal, needZalandariDps, _, _, _ = GetLFGRoleShortageRewards(341, 1)
+	_, needZalandariTank, needZalandariHeal, needZalandariDps, _, _, _ = GetLFGRoleShortageRewards(valorDungeonID, 1)
 	registerBonusTimer()
 end
 
@@ -895,6 +927,20 @@ function DungeonHelper:OnProfileChanged(event, database, newProfileKey)
 		db.startTime = 0
 	end
 	frame:UpdateText()
+end
+
+local function GetItemlevel()
+	NotifyInspect("target")
+	local t,c,u=0,0,UnitExists("target") and "target" or "player"
+	for i =1,18
+		do if i~=4 then
+		local k=GetInventoryItemLink(u,i)
+			if k then 
+				local _,_,_,l=GetItemInfo(k) t=t+l c=c+1 
+			end
+		end
+	end
+	if c>0 then print(t/c) end
 end
 
 frame:SetScript("OnEvent", OnEvent)
