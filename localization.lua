@@ -146,3 +146,12 @@ if L then
 	--@localization(locale="esMX", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
+
+local L = AceLocale:NewLocale("DungeonHelper", "ptBR")
+if L then
+	-- disable default party messages until localization is set
+	L["hi"] = ""
+	L["thanks, bb"] = ""
+	--@localization(locale="ptBR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
+	return
+end
