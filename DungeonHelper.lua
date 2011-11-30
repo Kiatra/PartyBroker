@@ -699,13 +699,16 @@ local function MyLFGSearchStatus_Update(...)
 	Debug("MyMyLFGSearchStatus_Update")
 	OrgMyLFGSearchStatus_Update(...)
 	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
-	MyLFGSearchStatus:SetHeight(210)
+	--MyLFGSearchStatus:SetHeight(210)
+	MyLFGSearchStatus:SetHeight(240)
 	
-	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds,_,_,_,_, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	MyLFGSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
 	if hasData then
 		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:48:64:0:16|t %s", healerWait == -1 and TIME_UNKNOWN or SecondsToTime(healerWait, false, false, 1))			
+		Debug("MyMyLFGSearchStatus_Update: test=", test, " damageWait=", damageWait, " TIME_UNKNOWN=",TIME_UNKNOWN)
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:16:32:0:16|t %s", damageWait == -1 and TIME_UNKNOWN or SecondsToTime(damageWait, false, false, 1))		
 		dpsWaitFS:SetText(test)
 	end
@@ -717,7 +720,7 @@ MyLFGSearchStatus._Show = MyLFGSearchStatus.Show
 local function MyLFGSearchStatus_Show(...)
 	MyLFGSearchStatus:_Show(...)
 	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
-	MyLFGSearchStatus:SetHeight(210)
+	MyLFGSearchStatus:SetHeight(240)
 end
 MyLFGSearchStatus.Show = MyLFGSearchStatus_Show
 
@@ -784,7 +787,7 @@ end
 
 local function OnEvent(self, event, ...)
 	--Debug("OnEvent", event, ...)
-	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, _,_,_,_,instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	if event == "PLAYER_ENTERING_WORLD" then
 		if IsInInstance() and firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
 			acetimer:ScheduleTimer(function()
@@ -815,7 +818,7 @@ local function OnEvent(self, event, ...)
 			end
 		end
 		if db.showTimerBar and candy then
-			porposalBar = candy:New("Interface\\AddOns\\ChocolateBar\\pics\\DarkBottom", _G.LFDDungeonReadyPopup:GetWidth()-5, 14)
+			porposalBar = candy:New("Interface\\AddOns\\ChocolateBar\\pics\\DarkBottom", _G.LFGDungeonReadyPopup:GetWidth()-5, 14)
 			porposalBar:SetPoint("CENTER",0,120)
 			porposalBar:SetFrameStrata("FULLSCREEN_DIALOG")
 			porposalBar:SetColor(1, 0, 0, 1)
