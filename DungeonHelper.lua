@@ -12,7 +12,7 @@ local endTime = 0
 local delay, counter = 1, 0
 local frame = CreateFrame("Frame")
 local dungeonInProgress = false
-local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime
+local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime
 local formattedText = ""
 local texTank, texHeal, texDps, texDpsGrey, texHankGrey, texHealGrey
 local _, bonusTimer, invitationAlertTimer, firstEnterDungeon
@@ -702,8 +702,9 @@ local function MyLFGSearchStatus_Update(...)
 	--MyLFGSearchStatus:SetHeight(210)
 	MyLFGSearchStatus:SetHeight(240)
 	
-	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
-	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds,_,_,_,_, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds,_,_,_,_, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
+
 	MyLFGSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
 	if hasData then
 		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
@@ -787,7 +788,9 @@ end
 
 local function OnEvent(self, event, ...)
 	--Debug("OnEvent", event, ...)
-	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, _,_,_,_,instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	--hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, _,_,_,_,instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
+
 	if event == "PLAYER_ENTERING_WORLD" then
 		if IsInInstance() and firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
 			acetimer:ScheduleTimer(function()
