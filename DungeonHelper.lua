@@ -49,12 +49,14 @@ end
 
 local function Debug(...)
 	 --@debug@
-	local s = "Dungeon Helper Debug:"
-	for i=1,_G.select("#", ...) do
-		local x = _G.select(i, ...)
-		s = _G.strjoin(" ",s,_G.tostring(x))
+	if DungeonHelper.db.char.debug then
+		local s = "Dungeon Helper Debug:"
+		for i=1,_G.select("#", ...) do
+			local x = _G.select(i, ...)
+			s = _G.strjoin(" ",s,_G.tostring(x))
+		end
+		_G.DEFAULT_CHAT_FRAME:AddMessage(s)
 	end
-	_G.DEFAULT_CHAT_FRAME:AddMessage(s)
 	--@end-debug@
 end
 
@@ -195,6 +197,21 @@ local aceoptions = {
 						db.leaveDialoge = value
 					end,
 				},
+				--@debug@
+				debug = {
+		            type = 'toggle',
+					--width = "half",
+					order = 11,
+		            name = "Debug",
+		            desc = "Debug",
+		            get = function(info, value)
+						return DungeonHelper.db.char.debug
+		            end,
+		            set = function(info, value)
+						DungeonHelper.db.char.debug = value
+		            end,
+				},
+				--@end-debug@
 			},
 		},
 		bonusWatch = {
