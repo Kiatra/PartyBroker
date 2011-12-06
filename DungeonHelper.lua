@@ -29,23 +29,16 @@ local version, _, _, tocversion = _G.GetBuildInfo()
 local MyLFGSearchStatus, MyLFGSearchStatusTitle, MyLFGSearchStatusDamage1, MyLFGSearchStatus_Update
 local valorDungeonID = 341
 local valorDungeonString, MyLFGSearchStatusString
-if version < "4.3" then
-	MyLFGSearchStatus = _G.LFDSearchStatus
-	MyLFGSearchStatusString = "LFDSearchStatus"
-	MyLFGSearchStatusTitle = LFDSearchStatusTitle
-	MyLFGSearchStatusDamage1 = LFDSearchStatusDamage1
-	MyLFGSearchStatus_Update = LFDSearchStatus_Update
-	valorDungeonString = L["Zandalari"]
-else
-	MyLFGSearchStatus = _G.LFGSearchStatus
-	MyLFGSearchStatusString = "LFGSearchStatus"
-	--MyLFGSearchStatus_Show
-	MyLFGSearchStatusTitle = LFGSearchStatusTitle
-	MyLFGSearchStatusDamage1 = LFGSearchStatusDamage1
-	MyLFGSearchStatus_Update = LFGSearchStatus_Update
-	valorDungeonID = 434
-	valorDungeonString = L["Twilight"]
-end
+
+MyLFGSearchStatus = _G.LFGSearchStatus
+MyLFGSearchStatusString = "LFGSearchStatus"
+--MyLFGSearchStatus_Show
+MyLFGSearchStatusTitle = LFGSearchStatusTitle
+MyLFGSearchStatusDamage1 = LFGSearchStatusDamage1
+MyLFGSearchStatus_Update = LFGSearchStatus_Update
+valorDungeonID = 434
+valorDungeonString = L["Twilight"]
+
 
 local function Debug(...)
 	 --@debug@
@@ -531,38 +524,38 @@ local function updateCallToArms()
 	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(301, 1)
 	if forTank ~= needCataTank then 
 		needCataTank = forTank
-		Debug("cata TankChanged",forTank)
+		--Debug("cata TankChanged",forTank)
 		if forTank and db.watchCataTank then bonusChanged = true end
 	end
 	if forHealer ~= needCataHeal then 
 		needCataHeal = forHealer
-		Debug("cata HealChanged",forHealer)
+		--Debug("cata HealChanged",forHealer)
 		if forHealer and db.watchCataHeal then bonusChanged = true end
 	end
 	if forDamage ~= needCataDps then 
 		needCataDps = forDamage
-		Debug("cata DPSChanged")
+		--Debug("cata DPSChanged")
 		if forDamage and db.watchCataDPS then bonusChanged = true end
 	end
 	
 	local eligible, forTank, forHealer, forDamage, itemCount, money, xp = GetLFGRoleShortageRewards(valorDungeonID, 1)
 	if forTank ~= needZalandariTank then 
 		needZalandariTank = forTank
-		Debug("za TankChanged",forTank)
+		--Debug("za TankChanged",forTank)
 		if forTank and db.watchZandalariTank then bonusChanged = true end
 	end
 	if forHealer ~= needZalandariHeal then 
 		needZalandariHeal = forHealer
-		Debug("za HealChanged",forHealer)
+		--Debug("za HealChanged",forHealer)
 		if forHealer and db.watchZandalariHeal then bonusChanged = true end
 	end
 	if forDamage ~= needZalandariDps then 
 		needZalandariDps = forDamage
-		Debug("za HealChanged")
+		--Debug("za HealChanged")
 		if forDamage and db.watchZandalariDPS then bonusChanged = true end
 	end
 	if bonusChanged then
-		Debug("bonusChanged")
+		--Debug("bonusChanged")
 		bonusAlert()
 	end
 end
@@ -696,7 +689,7 @@ dpsWaitFS:SetPoint("CENTER",titleWaitFS,0,-20)
 --post hook MyLFGSearchStatus_Update
 local OrgMyLFGSearchStatus_Update = MyLFGSearchStatus_Update
 local function MyLFGSearchStatus_Update(...)
-	Debug("MyMyLFGSearchStatus_Update")
+	--Debug("MyMyLFGSearchStatus_Update")
 	OrgMyLFGSearchStatus_Update(...)
 	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
 	--MyLFGSearchStatus:SetHeight(210)
@@ -709,7 +702,7 @@ local function MyLFGSearchStatus_Update(...)
 	if hasData then
 		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:48:64:0:16|t %s", healerWait == -1 and TIME_UNKNOWN or SecondsToTime(healerWait, false, false, 1))			
-		Debug("MyMyLFGSearchStatus_Update: test=", test, " damageWait=", damageWait, " TIME_UNKNOWN=",TIME_UNKNOWN)
+		--Debug("MyMyLFGSearchStatus_Update: test=", test, " damageWait=", damageWait, " TIME_UNKNOWN=",TIME_UNKNOWN)
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:16:32:0:16|t %s", damageWait == -1 and TIME_UNKNOWN or SecondsToTime(damageWait, false, false, 1))		
 		dpsWaitFS:SetText(test)
 	end
@@ -787,8 +780,7 @@ local function playInvitationAlert()
 end
 
 local function OnEvent(self, event, ...)
-	--Debug("OnEvent", event, ...)
-	--hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, _,_,_,_,instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
+	Debug("OnEvent", event, ...)
 	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
 
 	if event == "PLAYER_ENTERING_WORLD" then
@@ -799,18 +791,24 @@ local function OnEvent(self, event, ...)
 			firstEnterDungeon = false
 		end
 		if IsInInstance() and _G.HasLFGRestrictions() and not dungeonInProgress then --dungeon in progress but we don't now about it (dc, reload ui)
-			Debug("PLAYER_ENTERING_WORLD db.startTime",db.startTime)
+			
 			if db.startTime == 0 then
 				db.startTime = GetTime()
 			end
 			dungeonInProgress = true
+			Debug("PLAYER_ENTERING_WORLD, endTime=0")
 			endTime = 0
 			frame:SetScript("OnUpdate", OnUpdate)
+			Debug("PLAYER_ENTERING_WORLD dungeon not in progress, db.startTime",GetTimeString(db.startTime))
 		end
 	elseif event == "LFG_PROPOSAL_FAILED" then
 		acetimer:CancelTimer(invitationAlertTimer, true)
 		if porposalBar then porposalBar:Stop() end
-	elseif event == "LFG_PROPOSAL_SHOW" then
+	elseif event == "LFG_PROPOSAL_SHOW" or event == "LFG_PROPOSAL_SHOW" then
+		dungeonInProgress = false
+		firstEnterDungeon = true
+		endTime = 0
+		db.startTime = GetTime()
 		if db.playAlarm then
 			if _G.GetCVar("gxWindow") == "1" then
 				invitationAlertTimer = acetimer:ScheduleTimer(function()
@@ -831,6 +829,7 @@ local function OnEvent(self, event, ...)
 			porposalBar:Start()
 		end
 	elseif event == "LFG_PROPOSAL_SUCCEEDED" then
+		Debug("LFG_PROPOSAL_SUCCEEDED")
 		acetimer:CancelTimer(invitationAlertTimer, true)
 		-- going in or new player
 		if porposalBar then porposalBar:Stop() end
@@ -839,36 +838,38 @@ local function OnEvent(self, event, ...)
 			db.startTime = GetTime()
 			dungeonInProgress = true
 			firstEnterDungeon = true
+			Debug("LFG_PROPOSAL_SUCCEEDED+ dungeonInProgress=true, db.startTime = GetTime() = ",GetTimeString(GetTime()), " endTime = 0");
 			endTime = 0
 		end
 		frame:SetScript("OnUpdate", OnUpdate)
-		Debug("NumPartyMembers=",_G.GetNumPartyMembers(),"starttime=",db.startTime)
+		Debug("NumPartyMembers=",_G.GetNumPartyMembers(),"starttime=",GetTimeString(db.startTime))
 	elseif event == "LFG_COMPLETION_REWARD" then
 		-- dungeon done (random only)
 		--frame:SetScript("OnUpdate", nil)
 		local dur = GetTime() - db.startTime
-		Debug("starttime=",db.startTime,"dur=",dur)
+		Debug("LFG_COMPLETION_REWARD, starttime=",db.startTime,"dur=",GetTimeString(dur))
 		if db.reportTime and db.startTime ~= 0 and GetTimeStringLong(dur) ~= "-" then
 			_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false
 		endTime = GetTime() - db.startTime
+		Debug("LFG_COMPLETION_REWARD, starttime=0"," endTime=",GetTimeString(endTime))
 		db.startTime = 0
 		if db.leaveDialoge then _G.StaticPopup_Show("DUNGEONHELPER_LEAVEDIALOG") end
 	elseif event == "LFG_PROPOSAL_UPDATE" then
-		local proposalExists, typeID, id, name, texture, role, hasResponded, totalEncounters, completedEncounters, numMembers, isLeader = _G.GetLFGProposal()
+		local proposalExists, id, typeID, subtypeID, name, texture, role, hasResponded, totalEncounters, completedEncounters, numMembers, isLeader = _G.GetLFGProposal();
 		if hasResponded then
 			acetimer:CancelTimer(invitationAlertTimer, true)
 		end
 	elseif event == "PARTY_MEMBERS_CHANGED" then
 		if not _G.UnitInRaid("player") then 
-			Debug("PARTY_MEMBERS_CHANGED:",_G.GetNumPartyMembers())
+			--Debug("PARTY_MEMBERS_CHANGED:",_G.GetNumPartyMembers())
 			--leave party
 			if _G.GetNumPartyMembers() < 1 then
 				dungeonInProgress = false
 				endTime = GetTime() - db.startTime
-				Debug("starttime = 0")
+				Debug("NumPartyMembers() < 1, starttime = 0, endTime=", GetTimeString(endTime))
 				db.startTime = 0
 			end
 		end
@@ -919,7 +920,7 @@ function DungeonHelper:OnInitialize()
 	
 	LSM:Register("sound", "Red Alert","Interface\\AddOns\\DungeonHelper\\media\\alert.mp3")
 	LSM:Register("sound", "Blizzard: Alarm Clock 3",  "Sound\\Interface\\AlarmClockWarning3.ogg")
-	Debug(LSM:Fetch("sound", "Blizzard: Alarm Clock 3"))
+	--Debug(LSM:Fetch("sound", "Blizzard: Alarm Clock 3"))
 	db.bonusSoundFile = LSM:Fetch("sound", db.bonusSoundName) or LSM:Fetch("sound", "Blizzard: Alarm Clock 3")
 	db.porposalSoundFile = LSM:Fetch("sound", db.porposalSoundName) or LSM:Fetch("sound", "Red Alert")
 	
@@ -947,6 +948,7 @@ function DungeonHelper:OnProfileChanged(event, database, newProfileKey)
 	if IsInInstance() and _G.HasLFGRestrictions() then --dungeon in progress
 		db.startTime = oldDB.startTime
 	else
+		Debug("OnProfileChanged, db.startTime = 0")
 		db.startTime = 0
 	end
 	frame:UpdateText()
@@ -966,7 +968,15 @@ local function GetItemlevel()
 	if c>0 then print(t/c) end
 end
 
+--elseif ( event == "LFG_ROLE_CHECK_ROLE_CHOSEN" ) then
+--elseif ( event == "LFG_OFFER_CONTINUE" ) then
+
 frame:SetScript("OnEvent", OnEvent)
+
+frame:RegisterEvent("LFG_OFFER_CONTINUE")
+frame:RegisterEvent("LFG_ROLE_CHECK_ROLE_CHOSEN")
+--frame:RegisterEvent("LFG_LOCK_INFO_RECEIVED")
+
 frame:RegisterEvent("LFG_QUEUE_STATUS_UPDATE")
 frame:RegisterEvent("LFG_PROPOSAL_UPDATE")
 frame:RegisterEvent("LFG_BOOT_PROPOSAL_UPDATE")
