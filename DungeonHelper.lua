@@ -561,11 +561,10 @@ local function updateCallToArms()
 end
 
 function frame:UpdateText()
-	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
 	formattedText = ""
 	if (hasData) then
 		frame:SetScript("OnUpdate", OnUpdate)
-		local dpshas = 3 - dpsNeeds 
+		local dpshas = totalDPS - dpsNeeds 
 		local text=""
 		local green = "|cff00ff00"
 		local red = "|cffdd3a00"
@@ -593,13 +592,21 @@ function frame:UpdateText()
 			--instanceName = "Custom"
 		end
 		local prefix = db and db.showText and instanceName and instanceName..": " or ""
-		local text = ""
-		
+		local dpsText = ""
 		if db.display == "icons" then
-			local dpsText = ""
-			for i=1,3 do
-				--Debug("i=",i)
-				if i <= dpshas then
+			if totalDPS == 3 then
+				-- 5 man
+				for i=1,3 do
+					--Debug("i=",i)
+					if i <= dpshas then
+						dpsText = dpsText..texDps
+					else
+						dpsText = dpsText..texDpsGrey
+					end
+				end
+			else
+				--raid
+				if dpsNeeds == 0 then
 					dpsText = dpsText..texDps
 				else
 					dpsText = dpsText..texDpsGrey
@@ -697,8 +704,9 @@ local function MyLFGSearchStatus_Update(...)
 	
 	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds,_,_,_,_, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
 	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
-
-	MyLFGSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
+	if instanceName then
+		MyLFGSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
+	end
 	if hasData then
 		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
 		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:48:64:0:16|t %s", healerWait == -1 and TIME_UNKNOWN or SecondsToTime(healerWait, false, false, 1))			
@@ -786,7 +794,12 @@ local function OnEvent(self, event, ...)
 	if event == "PLAYER_ENTERING_WORLD" then
 		if IsInInstance() and firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
 			acetimer:ScheduleTimer(function()
-				_G.SendChatMessage(db.startMessage,"party",nil,nil)
+				local _, instanceType, _, _, _, _, _ = GetInstanceInfo()
+				if instanceType == "raid" then
+					_G.SendChatMessage(db.startMessage,"raid",nil,nil)
+				else
+					_G.SendChatMessage(db.startMessage,"party",nil,nil)
+				end
 			end, 4)	
 			firstEnterDungeon = false
 		end
@@ -849,7 +862,12 @@ local function OnEvent(self, event, ...)
 		local dur = GetTime() - db.startTime
 		Debug("LFG_COMPLETION_REWARD, starttime=",db.startTime,"dur=",GetTimeString(dur))
 		if db.reportTime and db.startTime ~= 0 and GetTimeStringLong(dur) ~= "-" then
-			_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
+			local _, instanceType, _, _, _, _, _ = GetInstanceInfo()
+			if instanceType == "raid" then
+				_G.SendChatMessage(L["Raid completed in"]..": "..GetTimeStringLong(dur),"raid",nil,nil)
+			else
+				_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
+			end
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
 		dungeonInProgress = false

@@ -5,6 +5,7 @@ local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
 local L = AceLocale:NewLocale("DungeonHelper", "enUS", true)
 
 if L then
+	L["Raid completed in"] = true
 	L["Twilight"] = true
 	
 	L["Leave Party Dialog"] = true
