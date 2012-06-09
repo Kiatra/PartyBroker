@@ -72,6 +72,7 @@ if L then
 	L["Find Group"] = true
 	L["Queued for: "] = true
 	L["Click to open the dungeon finder."] = true
+	L["Shift-Click to open the raid finder."] = true
 	L["Ctrl-Click or Middle-Click Teleport."] = true
 	L["Right-Click for options."] = true
 end

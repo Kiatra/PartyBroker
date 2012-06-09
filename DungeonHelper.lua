@@ -69,6 +69,24 @@ _G.StaticPopupDialogs["DUNGEONHELPER_LEAVEDIALOG"] = {
 	hideOnEscape = true,
 }
 
+
+local function GetItemlevel(unitid)
+	NotifyInspect(unitid)
+	local t,c,u=0,0,UnitExists(unitid) and "target" or "player"
+	for i =1,18
+		do if i~=4 then
+		local k=GetInventoryItemLink(u,i)
+			if k then 
+				local _,_,_,ilevel=GetItemInfo(k)
+				t=t+ilevel
+				c=c+1 
+			end
+		end
+	end
+	Debug(GetUnitName(unitid), "itemlvl: ",t/c)
+	ClearInspectPlayer(unitid)
+end
+
 local version = GetAddOnMetadata("DungeonHelper","X-Curse-Packaged-Version") or ""
 local aceoptions = { 
     name = "Dungeon Helper".." "..version,
@@ -673,12 +691,15 @@ end
 
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
-		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")	
+		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")
+		GetItemlevel()
 	elseif button == "MiddleButton" then
 		Teleport()
 	else --left click
 		if _G.IsControlKeyDown() then
 			Teleport()
+		elseif _G.IsShiftKeyDown() then			
+			_G.RaidMicroButton:GetScript("OnClick")(_G.RaidMicroButton, button, ...)
 		else
 			_G.LFDMicroButton:GetScript("OnClick")(_G.LFDMicroButton, button, ...)
 		end
@@ -757,6 +778,7 @@ local function OnEnter(anchor)
 		tooltip:SetOwner(anchor, "ANCHOR_NONE")
 		tooltip:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
 		tooltip:AddLine(L["Click to open the dungeon finder."])
+		tooltip:AddLine(L["Shift-Click to open the raid finder."])
 		tooltip:AddLine(L["Ctrl-Click or Middle-Click Teleport."])
 		tooltip:AddLine(L["Right-Click for options."])
 		tooltip:Show()
@@ -970,20 +992,6 @@ function DungeonHelper:OnProfileChanged(event, database, newProfileKey)
 		db.startTime = 0
 	end
 	frame:UpdateText()
-end
-
-local function GetItemlevel()
-	NotifyInspect("target")
-	local t,c,u=0,0,UnitExists("target") and "target" or "player"
-	for i =1,18
-		do if i~=4 then
-		local k=GetInventoryItemLink(u,i)
-			if k then 
-				local _,_,_,l=GetItemInfo(k) t=t+l c=c+1 
-			end
-		end
-	end
-	if c>0 then print(t/c) end
 end
 
 --elseif ( event == "LFG_ROLE_CHECK_ROLE_CHOSEN" ) then
