@@ -21,21 +21,17 @@ local needZalandariTank, needZalandariHeal, needZalandariDps
 local needCataTank, needCataHeal, needCataDps
 -- local copy of globals
 local _G, string, mod, floor, format, type = _G, string, mod, floor, format, type
-local MiniMapLFGFrame, GetLFGQueueStats, LFDQueueFrame, IsInInstance = MiniMapLFGFrame, GetLFGQueueStats, LFDQueueFrame, IsInInstance
+local QueueStatusMinimapButton, GetLFGQueueStats, LFDQueueFrame, IsInInstance = QueueStatusMinimapButton, GetLFGQueueStats, LFDQueueFrame, IsInInstance
 local GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards = GetTime, TIME_UNKNOWN, SecondsToTime, GetLFGMode, GetLFGRoleShortageRewards
 local RequestLFDPlayerLockInfo, LFDParentFrame = RequestLFDPlayerLockInfo, LFDParentFrame
 
 local version, _, _, tocversion = _G.GetBuildInfo()
-local MyLFGSearchStatus, MyLFGSearchStatusTitle, MyLFGSearchStatusDamage1, MyLFGSearchStatus_Update
+local MyQueueStatusFrame, MyQueueStatusFrameTitle, MyQueueStatusFrameDamage1, MyQueueStatusFrame_Update
 local valorDungeonID = 341
-local valorDungeonString, MyLFGSearchStatusString
+local valorDungeonString, MyQueueStatusFrameString
 
-MyLFGSearchStatus = _G.LFGSearchStatus
-MyLFGSearchStatusString = "LFGSearchStatus"
---MyLFGSearchStatus_Show
-MyLFGSearchStatusTitle = LFGSearchStatusTitle
-MyLFGSearchStatusDamage1 = LFGSearchStatusDamage1
-MyLFGSearchStatus_Update = LFGSearchStatus_Update
+local category = LE_LFG_CATEGORY_LFD
+
 valorDungeonID = 434
 valorDungeonString = L["Twilight"]
 
@@ -109,11 +105,11 @@ local aceoptions = {
 						return db.hideMinimap
 					end,
 					set = function(info, value)
-						if MiniMapLFGFrame then
+						if QueueStatusMinimapButton then
 							if value then
-								MiniMapLFGFrame:Hide()
+								QueueStatusMinimapButton:Hide()
 							else
-								MiniMapLFGFrame:Show()
+								QueueStatusMinimapButton:Show()
 							end
 						end
 						db.hideMinimap = value
@@ -638,12 +634,14 @@ function frame:UpdateText()
 		end
 		
 		if db.showTime then
-			formattedText = text.." "..L["Time"]..": "..GetTimeString(GetTime() - queuedTime).."/"..GetTimeString(myWait).." "
+			--formattedText = text.." "..L["Time"]..": "..GetTimeString(GetTime() - queuedTime).."/"..GetTimeString(myWait).." "
+			local categoryname = LFG_CATEGORY_NAMES[category] or ""
+			formattedText = text.." "..categoryname..": "..GetTimeString(GetTime() - queuedTime).."/"..GetTimeString(myWait).." "
 		else
 			formattedText = text
 		end
 	else
-		local mode, submode = GetLFGMode();
+		local mode, submode = GetLFGMode(category);
 		if mode == "lfgparty" then
 			--frame:SetScript("OnUpdate", OnUpdate)
 			if db.showTime then
@@ -692,7 +690,7 @@ end
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
 		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")
-		GetItemlevel()
+		--GetItemlevel()
 	elseif button == "MiddleButton" then
 		Teleport()
 	else --left click
@@ -706,73 +704,15 @@ local function Onclick(self, button, ...)
 	end
 end
 
-local titleWaitFS = MyLFGSearchStatus:CreateFontString(nil, nil, "GameFontNormal")
-titleWaitFS:SetPoint("BOTTOMLEFT",MyLFGSearchStatus,"TOPLEFT",120,-135)
---titleWaitFS:SetPoint("CENTER",LFGSearchStatusDamage1,0,-55)
-titleWaitFS:SetText("Wait time as:")
-local dpsWaitFS = MyLFGSearchStatus:CreateFontString(nil, nil, "GameFontHighlight")
---dpsWaitFS:SetPoint("CENTER",titleWaitFS,0,-20)
-dpsWaitFS:SetPoint("CENTER",titleWaitFS,0,-20)
-
---post hook MyLFGSearchStatus_Update
-local OrgMyLFGSearchStatus_Update = MyLFGSearchStatus_Update
-local function MyLFGSearchStatus_Update(...)
-	--Debug("MyMyLFGSearchStatus_Update")
-	OrgMyLFGSearchStatus_Update(...)
-	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
-	--MyLFGSearchStatus:SetHeight(210)
-	MyLFGSearchStatus:SetHeight(240)
-	
-	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds,_,_,_,_, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats()
-	local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
-	if instanceName then
-		MyLFGSearchStatusTitle:SetText(L["Queued for: "]..instanceName)
-	end
-	if hasData then
-		local test = string.format("|TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:32:48:0:16|t %s", tankWait == -1 and TIME_UNKNOWN or SecondsToTime(tankWait, false, false, 1))
-		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:48:64:0:16|t %s", healerWait == -1 and TIME_UNKNOWN or SecondsToTime(healerWait, false, false, 1))			
-		--Debug("MyMyLFGSearchStatus_Update: test=", test, " damageWait=", damageWait, " TIME_UNKNOWN=",TIME_UNKNOWN)
-		test = test..string.format(" |TInterface\\LFGFrame\\LFGRole:18:18:0:2:64:16:16:32:0:16|t %s", damageWait == -1 and TIME_UNKNOWN or SecondsToTime(damageWait, false, false, 1))		
-		dpsWaitFS:SetText(test)
-	end
-end
-
-_G[MyLFGSearchStatusString.."_Update"] = MyLFGSearchStatus_Update
-
-MyLFGSearchStatus._Show = MyLFGSearchStatus.Show
-local function MyLFGSearchStatus_Show(...)
-	MyLFGSearchStatus:_Show(...)
-	--MyLFGSearchStatus:SetHeight(MyLFGSearchStatus:GetHeight()+40)
-	MyLFGSearchStatus:SetHeight(240)
-end
-MyLFGSearchStatus.Show = MyLFGSearchStatus_Show
-
---[[
-local LFDQueueFrame_SetType_ORG = LFDQueueFrame_SetType
-LFDQueueFrame_SetType = function(value, ...) 
-	LFDQueueFrame_SetType_ORG(value, ...)
-	frame:UpdateText()
-end
---]]
-
 local function OnEnter(anchor)
-	--local hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, instanceType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
-	local mode, submode = GetLFGMode();
+	local mode, submode = GetLFGMode(category);
 	
 	if (mode == "queued" or mode == "listed") and instanceName then
-		--local MyLFGSearchStatus = MyLFGSearchStatus
-		local version, _, _, tocversion = _G.GetBuildInfo()
-		local MyLFGSearchStatus
-		if version < "4.3" then
-			MyLFGSearchStatus = _G.LFDSearchStatus
-		else
-			MyLFGSearchStatus = _G.LFGSearchStatus
-		end
-		MyLFGSearchStatus:ClearAllPoints()
-		MyLFGSearchStatus:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
-		MyLFGSearchStatus:SetParent(anchor)
-		MyLFGSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
-		MyLFGSearchStatus:Show()
+		QueueStatusFrame:ClearAllPoints()
+		QueueStatusFrame:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
+		QueueStatusFrame:SetParent(anchor)
+		QueueStatusFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+		QueueStatusFrame:Show()
 	else
 		local tooltip = _G.GameTooltip 
 		tooltip:SetOwner(anchor, "ANCHOR_NONE")
@@ -786,11 +726,11 @@ local function OnEnter(anchor)
 end
 
 local function OnLeave()
-	MyLFGSearchStatus:ClearAllPoints()
-	MyLFGSearchStatus:SetPoint("TOPRIGHT", MiniMapLFGFrame, "TOPLEFT")
-	MyLFGSearchStatus:SetParent(MiniMapLFGFrame)
-	MyLFGSearchStatus:SetFrameStrata("FULLSCREEN_DIALOG")
-	MyLFGSearchStatus:Hide()
+	QueueStatusFrame:ClearAllPoints()
+	QueueStatusFrame:SetPoint("TOPRIGHT", QueueStatusMinimapButton, "TOPLEFT")
+	QueueStatusFrame:SetParent(QueueStatusMinimapButton)
+	QueueStatusFrame:SetFrameStrata("FULLSCREEN_DIALOG")
+	QueueStatusFrame:Hide()
 	_G.GameTooltip:Hide()
 end
 
@@ -811,10 +751,25 @@ end
 
 local function OnEvent(self, event, ...)
 	Debug("OnEvent", event, ...)
-	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats();
-
+	--LFGQueuedForList = {};
+	--for i=1, NUM_LE_LFG_CATEGORYS do
+	--	LFGQueuedForList[i] = {};
+	--end
+	
+	--LFG_CATEGORY_NAMES	
+	--if table.getn(LFGQueuedForList[LE_LFG_CATEGORY_RF]) > 0 then	 
+	if GetLFGMode(LE_LFG_CATEGORY_RF) then
+		category = LE_LFG_CATEGORY_RF
+	else
+		category = LE_LFG_CATEGORY_LFD
+	end
+	
+	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats(category);
+	
+	--local inParty, joined, queued, noPartialClear, achievements, lfgComment, slotCount, category, leader, tank, healer, dps = GetLFGInfoServer(category);
+	
 	if event == "PLAYER_ENTERING_WORLD" then
-		if IsInInstance() and firstEnterDungeon and db.startMessage ~= "" and _G.GetNumPartyMembers() < 4 then
+		if IsInInstance() and firstEnterDungeon and db.startMessage ~= "" and _G.GetNumSubgroupMembers() < 4 then
 			acetimer:ScheduleTimer(function()
 				local _, instanceType, _, _, _, _, _ = GetInstanceInfo()
 				if instanceType == "raid" then
@@ -917,8 +872,8 @@ local function OnEvent(self, event, ...)
 		updateCallToArms()
 	end
 	frame:UpdateText()
-	if MiniMapLFGFrame and db.hideMinimap then
-		MiniMapLFGFrame:Hide()
+	if QueueStatusMinimapButton and db.hideMinimap then
+		QueueStatusMinimapButton:Hide()
 	end
 end
 
