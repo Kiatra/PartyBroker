@@ -832,7 +832,7 @@ local function OnEvent(self, event, ...)
 			endTime = 0
 		end
 		frame:SetScript("OnUpdate", OnUpdate)
-		Debug("NumPartyMembers=",_G.GetNumPartyMembers(),"starttime=",GetTimeString(db.startTime))
+		Debug("NumPartyMembers=",_G.GetNumGroupMembers(),"starttime=",GetTimeString(db.startTime))
 	elseif event == "LFG_COMPLETION_REWARD" then
 		-- dungeon done (random only)
 		--frame:SetScript("OnUpdate", nil)
@@ -857,11 +857,11 @@ local function OnEvent(self, event, ...)
 		if hasResponded then
 			acetimer:CancelTimer(invitationAlertTimer, true)
 		end
-	elseif event == "PARTY_MEMBERS_CHANGED" then
+	elseif event == "GROUP_ROSTER_UPDATE" then
 		if not _G.UnitInRaid("player") then 
-			--Debug("PARTY_MEMBERS_CHANGED:",_G.GetNumPartyMembers())
+			--Debug("GROUP_ROSTER_UPDATE:",_G.GetNumGroupMembers())
 			--leave party
-			if _G.GetNumPartyMembers() < 1 then
+			if _G.GetNumGroupMembers() < 1 then
 				dungeonInProgress = false
 				endTime = GetTime() - db.startTime
 				Debug("NumPartyMembers() < 1, starttime = 0, endTime=", GetTimeString(endTime))
@@ -971,4 +971,4 @@ frame:RegisterEvent("LFG_ROLE_UPDATE")
 frame:RegisterEvent("LFG_UPDATE_RANDOM_INFO")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("LFG_COMPLETION_REWARD")
-frame:RegisterEvent("PARTY_MEMBERS_CHANGED")
+frame:RegisterEvent("GROUP_ROSTER_UPDATE")
