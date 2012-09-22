@@ -30,7 +30,9 @@ local MyQueueStatusFrame, MyQueueStatusFrameTitle, MyQueueStatusFrameDamage1, My
 local valorDungeonID = 341
 local valorDungeonString, MyQueueStatusFrameString
 
+local LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF = LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF
 local category = LE_LFG_CATEGORY_LFD
+
 
 valorDungeonID = 434
 valorDungeonString = L["Twilight"]
@@ -626,11 +628,23 @@ function frame:UpdateText()
 					dpsText = dpsText..texDpsGrey
 				end
 			end
-			text = prefix..tmpTank..tmpHeal..dpsText
+			if category == LE_LFG_CATEGORY_SCENARIO then
+				text = prefix..dpsText
+			else
+				text = prefix..tmpTank..tmpHeal..dpsText
+			end
 		elseif db.display == "short" then
-			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["T"], healerColor,L["H"], damageColor,L["D"], dpshas)
+			if category == LE_LFG_CATEGORY_SCENARIO then
+				text = string.format("%s|r/%s%s|r/%s%s %i|r",prefix, damageColor,L["D"], dpshas)
+			else
+				text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["T"], healerColor,L["H"], damageColor,L["D"], dpshas)
+			end
 		else
-			text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+			if category == LE_LFG_CATEGORY_SCENARIO then
+				text = string.format("%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+			else
+				text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+			end
 		end
 		
 		if db.showTime then
@@ -760,8 +774,10 @@ local function OnEvent(self, event, ...)
 	--if table.getn(LFGQueuedForList[LE_LFG_CATEGORY_RF]) > 0 then	 
 	if GetLFGMode(LE_LFG_CATEGORY_RF) then
 		category = LE_LFG_CATEGORY_RF
-	else
+	elseif GetLFGMode(LE_LFG_CATEGORY_LFD) then
 		category = LE_LFG_CATEGORY_LFD
+	else
+		category = LE_LFG_CATEGORY_SCENARIO
 	end
 	
 	hasData,  leaderNeeds, tankNeeds, healerNeeds, dpsNeeds, totalTanks, totalHealers, totalDPS, instanceType, instanceSubType, instanceName, averageWait, tankWait, healerWait, damageWait, myWait, queuedTime = GetLFGQueueStats(category);
