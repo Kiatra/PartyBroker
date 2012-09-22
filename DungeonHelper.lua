@@ -635,13 +635,13 @@ function frame:UpdateText()
 			end
 		elseif db.display == "short" then
 			if category == LE_LFG_CATEGORY_SCENARIO then
-				text = string.format("%s|r/%s%s|r/%s%s %i|r",prefix, damageColor,L["D"], dpshas)
+				text = string.format("%s %i/3",prefix, dpshas)
 			else
 				text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["T"], healerColor,L["H"], damageColor,L["D"], dpshas)
 			end
 		else
 			if category == LE_LFG_CATEGORY_SCENARIO then
-				text = string.format("%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
+				text = string.format("%s %i/3",prefix, dpshas)
 			else
 				text = string.format("%s%s%s|r/%s%s|r/%s%s %i|r",prefix, tankColor,L["Tank"], healerColor,L["Healer"], damageColor,L["DPS"], dpshas)
 			end
