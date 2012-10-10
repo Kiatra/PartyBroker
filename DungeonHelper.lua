@@ -34,8 +34,8 @@ local LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF = LE_LFG
 local category = LE_LFG_CATEGORY_LFD
 
 
-valorDungeonID = 434
-valorDungeonString = L["Twilight"]
+valorDungeonID = 462
+valorDungeonString = L["Call To Arms"]
 
 
 local function Debug(...)
@@ -274,6 +274,7 @@ local aceoptions = {
 						db.bonusSoundName = value
 					end,
 				},
+				--[[
 				watchCata= {
 					inline = true,
 					name = function() local name, _, _, _, _, _, _, _ = _G.GetLFGDungeonInfo(301); return L["Watch"].." "..name end,
@@ -324,6 +325,7 @@ local aceoptions = {
 						},
 					},
 				},
+				--]]
 				watchZandalari = {
 					inline = true,
 					name = function() local name, _, _, _, _, _, _, _ = _G.GetLFGDungeonInfo(valorDungeonID); return L["Watch"].." "..name end,
@@ -703,6 +705,15 @@ end
 
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
+		--for i=1, NUM_LE_LFG_CATEGORYS do
+		--	LFGQueuedForList[i] = {};
+		--end
+		for i = 1, 600 do
+			_, needCataTank, needCataHeal, needCataDps, _, _, _ = GetLFGRoleShortageRewards(i, 1)
+			if needCataTank then
+				Debug(i)
+			end
+		end
 		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")
 		--GetItemlevel()
 	elseif button == "MiddleButton" then
