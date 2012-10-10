@@ -705,15 +705,14 @@ end
 
 local function Onclick(self, button, ...) 
 	if button == "RightButton" then
-		--for i=1, NUM_LE_LFG_CATEGORYS do
-		--	LFGQueuedForList[i] = {};
-		--end
+		--[[
 		for i = 1, 600 do
 			_, needCataTank, needCataHeal, needCataDps, _, _, _ = GetLFGRoleShortageRewards(i, 1)
 			if needCataTank then
 				Debug(i)
 			end
 		end
+		--]]
 		_G.InterfaceOptionsFrame_OpenToCategory("Dungeon Helper")
 		--GetItemlevel()
 	elseif button == "MiddleButton" then
