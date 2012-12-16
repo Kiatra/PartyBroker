@@ -57,7 +57,7 @@ _G.StaticPopupDialogs["DUNGEONHELPER_LEAVEDIALOG"] = {
 	button2 = _G.NO,
 	OnAccept = function()
 		Debug("leave party")
-		_G.SendChatMessage(db.endMessage,"party",nil,nil)
+		_G.SendChatMessage(db.endMessage,"INSTANCE_CHAT",nil,nil)
 		acetimer:ScheduleTimer(function()
 			_G.LeaveParty()
 		end, 1)	
@@ -721,7 +721,7 @@ local function Onclick(self, button, ...)
 		if _G.IsControlKeyDown() then
 			Teleport()
 		elseif _G.IsShiftKeyDown() then			
-			_G.RaidMicroButton:GetScript("OnClick")(_G.RaidMicroButton, button, ...)
+			--_G.RaidMicroButton:GetScript("OnClick")(_G.RaidMicroButton, button, ...)
 		else
 			_G.LFDMicroButton:GetScript("OnClick")(_G.LFDMicroButton, button, ...)
 		end
@@ -742,7 +742,7 @@ local function OnEnter(anchor)
 		tooltip:SetOwner(anchor, "ANCHOR_NONE")
 		tooltip:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT")
 		tooltip:AddLine(L["Click to open the dungeon finder."])
-		tooltip:AddLine(L["Shift-Click to open the raid finder."])
+		--tooltip:AddLine(L["Shift-Click to open the raid finder."])
 		tooltip:AddLine(L["Ctrl-Click or Middle-Click Teleport."])
 		tooltip:AddLine(L["Right-Click for options."])
 		tooltip:Show()
@@ -799,9 +799,9 @@ local function OnEvent(self, event, ...)
 			acetimer:ScheduleTimer(function()
 				local _, instanceType, _, _, _, _, _ = GetInstanceInfo()
 				if instanceType == "raid" then
-					_G.SendChatMessage(db.startMessage,"raid",nil,nil)
+					_G.SendChatMessage(db.startMessage,"INSTANCE_CHAT",nil,nil)
 				else
-					_G.SendChatMessage(db.startMessage,"party",nil,nil)
+					_G.SendChatMessage(db.startMessage,"INSTANCE_CHAT",nil,nil)
 				end
 			end, 4)	
 			firstEnterDungeon = false
@@ -867,9 +867,9 @@ local function OnEvent(self, event, ...)
 		if db.reportTime and db.startTime ~= 0 and GetTimeStringLong(dur) ~= "-" then
 			local _, instanceType, _, _, _, _, _ = GetInstanceInfo()
 			if instanceType == "raid" then
-				_G.SendChatMessage(L["Raid completed in"]..": "..GetTimeStringLong(dur),"raid",nil,nil)
+				_G.SendChatMessage(L["Raid completed in"]..": "..GetTimeStringLong(dur),"INSTANCE_CHAT",nil,nil)
 			else
-				_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"party",nil,nil)
+				_G.SendChatMessage(L["Dungeon completed in"]..": "..GetTimeStringLong(dur),"INSTANCE_CHAT",nil,nil)
 			end
 		end
 		dataobj.text = L["Completed in"]..": "..GetTimeString(dur)
