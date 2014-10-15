@@ -157,3 +157,9 @@ if L then
 	--@localization(locale="ptBR", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
 	return
 end
+
+local L = AceLocale:NewLocale("DungeonHelper", "itIT")
+if L then
+	--@localization(locale="itIT", format="lua_additive_table", handle-subnamespaces="concat", handle-unlocalized="ignore")@
+	return
+end
