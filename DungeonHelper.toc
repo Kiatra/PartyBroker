@@ -3,7 +3,6 @@
 ## Version: @project-version@
 ## Notes:
 ## Author: yess
-## X-eMail: starfire@fantasymail.de
 ## SavedVariables: DungeonHelperDB
 
 #@no-lib-strip@
