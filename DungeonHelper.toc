@@ -1,4 +1,4 @@
-## Interface: 60000
+## Interface: 70200
 ## Title: DungeonHelper
 ## Version: @project-version@
 ## Notes:
