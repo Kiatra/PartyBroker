@@ -27,7 +27,7 @@ local RequestLFDPlayerLockInfo, LFDParentFrame = RequestLFDPlayerLockInfo, LFDPa
 
 local version, _, _, tocversion = _G.GetBuildInfo()
 local MyQueueStatusFrame, MyQueueStatusFrameTitle, MyQueueStatusFrameDamage1, MyQueueStatusFrame_Update
-local valorDungeonID = 789
+local valorDungeonID = 1046
 local valorDungeonString, MyQueueStatusFrameString
 
 local LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF = LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF
