@@ -27,7 +27,7 @@ local RequestLFDPlayerLockInfo, LFDParentFrame = RequestLFDPlayerLockInfo, LFDPa
 
 local version, _, _, tocversion = _G.GetBuildInfo()
 local MyQueueStatusFrame, MyQueueStatusFrameTitle, MyQueueStatusFrameDamage1, MyQueueStatusFrame_Update
-local valorDungeonID = 1046
+local valorDungeonID = 1671
 local valorDungeonString, MyQueueStatusFrameString
 
 local LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF = LE_LFG_CATEGORY_SCENARIO, LE_LFG_CATEGORY_LFD, LE_LFG_CATEGORY_RF
@@ -57,7 +57,7 @@ _G.StaticPopupDialogs["DUNGEONHELPER_LEAVEDIALOG"] = {
 		Debug("leave party")
 		_G.SendChatMessage(db.endMessage,"INSTANCE_CHAT",nil,nil)
 		acetimer:ScheduleTimer(function()
-			_G.LeaveParty()
+			C_PartyInfo.LeaveParty()
 		end, 1)	
 	end,
 	timeout = 0,
