@@ -2,7 +2,7 @@
 ## Title: PartyBroker
 ## Version: @project-version@
 ## Notes: LDB Plugin for group finder
-## Author: yess
+## Author: Kiatra
 ## SavedVariables: DungeonHelperDB
 
 #@no-lib-strip@
