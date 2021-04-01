@@ -1,7 +1,7 @@
-## Interface: 90002
-## Title: DungeonHelper
+## Interface: 90005
+## Title: PartyBroker
 ## Version: @project-version@
-## Notes:
+## Notes: LDB Plugin for group finder
 ## Author: yess
 ## SavedVariables: DungeonHelperDB
 
